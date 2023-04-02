@@ -11,9 +11,13 @@ class Zone(State):
 
 		self.game = game
 
-		self.player = Player(self.game, RES/2)
-
+		# sprite groups
 		self.all_sprites = pygame.sprite.Group()
+
+		# sprites
+		self.player = Player(self.game, self.all_sprites, RES/2)
+		
+		# add sprite to groups
 		self.all_sprites.add(self.player)
 
 	def update(self, dt):
@@ -26,10 +30,8 @@ class Zone(State):
 	def render(self, screen):
 		screen.fill(PINK)
 
-		self.game.render_text('Zone', LIGHT_GREEN, self.game.big_font, RES * 0.5)
-		self.game.render_text('Zone', LIGHT_GREEN, self.game.medium_font, (HALF_WIDTH, HEIGHT * 0.6))
-		self.game.render_text('Zone', LIGHT_GREEN, self.game.small_font, (HALF_WIDTH, HEIGHT * 0.7))
-
 		# draw the sprites
 		for sprite in self.all_sprites:
 			screen.blit(sprite.image, sprite.rect)
+
+		self.game.render_text(self.player.vel, PURPLE, self.game.small_font, RES/2)
