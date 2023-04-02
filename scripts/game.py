@@ -1,0 +1,147 @@
+import sys, pygame, csv
+from pygame import mixer
+from os import walk
+from settings import *
+
+from intro import Intro
+
+class Game():
+	def __init__(self):
+
+		pygame.init()
+
+		self.clock = pygame.time.Clock()
+
+		#self.screen = pygame.display.set_mode((RES), pygame.FULLSCREEN|pygame.SCALED)
+		self.screen = pygame.display.set_mode(RES)
+
+		self.running = True
+
+		#font
+		self.big_font = pygame.font.Font(FONT, int(HEIGHT * 0.15))
+		self.medium_font = pygame.font.Font(FONT, int(HEIGHT * 0.1))
+		self.small_font = pygame.font.Font(FONT, int(HEIGHT * 0.05))
+
+		# states
+		self.stack = []
+
+		self.load_states()
+
+	def get_events(self):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				sys.exit()
+				
+			if event.type == pygame.KEYDOWN:
+
+				if event.key == pygame.K_ESCAPE:
+					ACTIONS['escape'] = True
+					self.running = False
+				elif event.key == pygame.K_UP:
+					ACTIONS['up'] = True
+				elif event.key == pygame.K_DOWN:
+					ACTIONS['down'] = True
+				elif event.key == pygame.K_RIGHT:
+					ACTIONS['right'] = True
+				elif event.key == pygame.K_LEFT:
+					ACTIONS['left'] = True
+				elif event.key == pygame.K_SPACE:
+					ACTIONS['space'] = True
+				elif event.key == pygame.K_RETURN:
+					ACTIONS['return'] = True
+				elif event.key == pygame.K_BACKSPACE:
+					ACTIONS['backspace'] = True
+
+			if event.type == pygame.KEYUP:
+
+				if event.key == pygame.K_UP:
+					ACTIONS['up'] = False
+				elif event.key == pygame.K_DOWN:
+					ACTIONS['down'] = False
+				if event.key == pygame.K_RIGHT:
+					ACTIONS['right'] = False
+				elif event.key == pygame.K_LEFT:
+					ACTIONS['left'] = False
+				elif event.key == pygame.K_SPACE:
+					ACTIONS['space'] = False
+
+			if event.type == pygame.MOUSEWHEEL:
+
+				if event.y == 1:
+					ACTIONS['scroll_up'] = True
+				elif event.y == -1:
+					ACTIONS['scroll_down'] = True
+
+			if event.type == pygame.MOUSEBUTTONDOWN:
+
+				if event.button == 1:
+					ACTIONS['left_click'] = True
+				elif event.button == 3:
+					ACTIONS['right_click'] = True
+				elif event.button == 4:
+					ACTIONS['scroll_down'] = True
+				elif event.button == 2:
+					ACTIONS['scroll_up'] = True
+
+			if event.type == pygame.MOUSEBUTTONUP:
+
+				if event.button == 1:
+					ACTIONS['left_click'] = False
+				elif event.button == 3:
+					ACTIONS['right_click'] = False
+				elif event.button == 4:
+					ACTIONS['scroll_down'] = False
+				elif event.button == 2:
+					ACTIONS['scroll_up'] = False
+
+
+	def reset_keys(self):
+		for key_pressed in ACTIONS:
+			ACTIONS[key_pressed] = False
+
+	def update(self, dt):
+		pygame.display.set_caption(str(round(self.clock.get_fps(), 2)))
+		self.stack[-1].update(dt)
+
+	def render(self, screen):
+		self.stack[-1].render(screen)
+		pygame.display.flip()
+
+	def load_states(self):
+		self.intro = Intro(self)
+		self.stack.append(self.intro)
+
+	def import_folder(self, path):
+		surf_list = []
+
+		for _, __, img_files in walk(path):
+			for img in img_files:
+				full_path = path + '/' + img
+				img_surf = pygame.image.load(full_path).convert_alpha()
+				img_surf = pygame.transform.scale(img_surf,(img_surf.get_width() * SCALE, img_surf.get_height() * SCALE))
+				surf_list.append(img_surf)
+
+		return surf_list
+
+	def get_image(self, path, size, pos):
+		surf = pygame.image.load(path).convert_alpha()
+		surf = pygame.transform.scale(surf, size)
+		rect = surf.get_rect(center = pos)
+		return(surf, rect)
+
+	def render_text(self, text, colour, font, pos):
+		surf = font.render(str(text), False, colour)
+		rect = surf.get_rect(center = pos)
+		self.screen.blit(surf, rect)
+
+	def run(self):
+		dt = self.clock.tick(FPS) * .001
+		self.get_events()
+		self.update(dt)
+		self.render(self.screen)
+
+if __name__ == "__main__":
+	game = Game()
+	while game.running:
+		game.run()
