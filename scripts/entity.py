@@ -10,9 +10,10 @@ class Entity(pygame.sprite.Sprite):
 		self.image.fill(LIGHT_GREEN)
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
+		self.pos = pygame.math.Vector2(self.rect.center)
 		self.vel = pygame.math.Vector2()
 		self.acc = pygame.math.Vector2()
-		self.friction = 0.99
+		self.friction = -0.2
 
 	def update(self, dt):
 		pass
@@ -23,31 +24,47 @@ class Entity(pygame.sprite.Sprite):
 class Player(Entity):
 	def __init__(self, game, groups, pos):
 		super().__init__(game, groups, pos)
-		self.speed = 5
+		
 
 	def move(self, dt):
-		keys = pygame.key.get_pressed()
-
+		
 		self.acc = pygame.math.Vector2()
 
+		keys = pygame.key.get_pressed()
+
 		if keys[pygame.K_RIGHT]:
-			self.acc.x += 0.3
-		elif keys[pygame.K_LEFT]:
-			self.acc.x -= 0.3
-		else:
-			self.acc.x = 0
+			self.acc.x += 0.4
+		if keys[pygame.K_LEFT]:
+			self.acc.x -= 0.4
 
 		if keys[pygame.K_DOWN]:
-			self.acc.y += 0.3
-		elif keys[pygame.K_UP]:
-			self.acc.y -= 0.3
-		else:
-			self.acc.y = 0
+			self.acc.y += 0.4
+		if keys[pygame.K_UP]:
+			self.acc.y -= 0.4
 
-		self.vel += self.acc
-		self.vel *= self.friction * dt
-		self.rect.x += self.vel.x
-		self.rect.y += self.vel.y
+		if self.acc.magnitude() != 0:
+			self.acc = self.acc.normalize()
+
+		self.acc += self.vel * self.friction
+		self.vel += self.acc * dt
+
+		self.pos += self.vel * dt - (self.acc * 0.5) * dt
+		self.rect.center = self.pos
+
+		
+
+
+		# if keys[pygame.K_DOWN]:
+		# 	self.acc.y += 1
+		# elif keys[pygame.K_UP]:
+		# 	self.acc.y -= 1
+		# else:
+		# 	self.acc.y = 0
+
+		# self.vel += self.acc * dt
+		# self.vel *= self.friction
+		# self.rect.x += self.vel.x
+		# self.rect.y += self.vel.y
 
 	def update(self, dt):
 		self.move(dt)

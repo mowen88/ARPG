@@ -12,8 +12,8 @@ class Game():
 
 		self.clock = pygame.time.Clock()
 
-		#self.screen = pygame.display.set_mode((RES), pygame.FULLSCREEN|pygame.SCALED)
-		self.screen = pygame.display.set_mode(RES)
+		self.screen = pygame.display.set_mode((RES), pygame.FULLSCREEN|pygame.SCALED)
+		# self.screen = pygame.display.set_mode(RES)
 
 		self.running = True
 
