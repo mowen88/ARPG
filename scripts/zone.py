@@ -34,4 +34,5 @@ class Zone(State):
 		for sprite in self.all_sprites:
 			screen.blit(sprite.image, sprite.rect)
 
-		self.game.render_text(self.player.acc, PURPLE, self.game.small_font, RES/2)
+		#self.game.render_text(f'{round(self.player.acc.x, 3)}, {round(self.player.acc.y, 3)}', PURPLE, self.game.small_font, RES/2)
+		self.game.render_text(self.player.moving_right, PURPLE, self.game.small_font, RES/2)
