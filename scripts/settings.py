@@ -3,6 +3,8 @@ import pygame, math
 FPS = 60
 RES = WIDTH, HEIGHT = pygame.math.Vector2(1600, 900)
 HALF_WIDTH, HALF_HEIGHT = RES * 0.5
+SCALE = 2
+TILESIZE = 25 * SCALE
 
 FONT = '../font/Pokemon Classic.ttf'
 

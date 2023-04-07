@@ -25,10 +25,12 @@ class Game():
 		# states
 		self.stack = []
 
+		self.current_zone = 0
+
 		self.load_states()
 
 	def get_events(self):
-		for event in pygame.event.get():
+		for event in pygame.event.get(): 
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
