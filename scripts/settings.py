@@ -1,12 +1,16 @@
 import pygame, math
 
 FPS = 60
-RES = WIDTH, HEIGHT = pygame.math.Vector2(1600, 900)
-HALF_WIDTH, HALF_HEIGHT = RES * 0.5
 SCALE = 2
-TILESIZE = 25 * SCALE
+TILESIZE = 16 * SCALE
+RES = WIDTH, HEIGHT = pygame.math.Vector2(640, 360)#(960, 540)
+HALF_WIDTH, HALF_HEIGHT = RES/2
 
 FONT = '../font/Pokemon Classic.ttf'
+
+Z_LAYERS = [pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group()]
+
+MX, MY = pygame.math.Vector2(0,0)
 
 # game colours
 BLACK = ((9, 9, 14))
@@ -26,4 +30,4 @@ MAGENTA = ((153, 60, 139))
 YELLOW = ((224, 225, 146))
 
 # key events
-ACTIONS = {'escape': True, 'space': False, 'up': False, 'down': False, 'left': False, 'right': False, 'return': False, 'left_click': False, 'right_click': False, 'scroll_up': False, 'scroll_down': False}
+ACTIONS = {'escape': False, 'space': False, 'up': False, 'down': False, 'left': False, 'right': False, 'return': False, 'backspace': False, 'left_click': False, 'right_click': False, 'scroll_up': False, 'scroll_down': False}

@@ -12,8 +12,8 @@ class Game():
 
 		self.clock = pygame.time.Clock()
 
-		#self.screen = pygame.display.set_mode((RES), pygame.FULLSCREEN|pygame.SCALED)
 		self.screen = pygame.display.set_mode(RES)
+		self.screen = pygame.display.set_mode((RES), pygame.FULLSCREEN|pygame.SCALED)
 
 		self.running = True
 
@@ -61,12 +61,16 @@ class Game():
 					ACTIONS['up'] = False
 				elif event.key == pygame.K_DOWN:
 					ACTIONS['down'] = False
-				if event.key == pygame.K_RIGHT:
+				elif event.key == pygame.K_RIGHT:
 					ACTIONS['right'] = False
 				elif event.key == pygame.K_LEFT:
 					ACTIONS['left'] = False
 				elif event.key == pygame.K_SPACE:
 					ACTIONS['space'] = False
+				elif event.key == pygame.K_RETURN:
+					ACTIONS['return'] = False
+				elif event.key == pygame.K_BACKSPACE:
+					ACTIONS['backspace'] = False
 
 			if event.type == pygame.MOUSEWHEEL:
 
@@ -102,13 +106,23 @@ class Game():
 		for key_pressed in ACTIONS:
 			ACTIONS[key_pressed] = False
 
-	def update(self, dt):
+	def update(self):
 		pygame.display.set_caption(str(round(self.clock.get_fps(), 2)))
-		self.stack[-1].update(dt)
+		self.stack[-1].update()
 
 	def render(self, screen):
 		self.stack[-1].render(screen)
+		self.custom_cursor()
 		pygame.display.flip()
+
+	def custom_cursor(self):
+		mx, my = pygame.mouse.get_pos()
+		pygame.mouse.set_visible(False)
+		cursor_img = pygame.image.load('../assets/cursor.png').convert_alpha()
+		cursor_img = pygame.transform.scale_by(cursor_img, SCALE)
+		cursor_img.set_alpha(150)
+		cursor_rect = cursor_img.get_rect()
+		self.screen.blit(cursor_img, (mx, my))
 
 	def load_states(self):
 		self.intro = Intro(self)
@@ -121,14 +135,16 @@ class Game():
 			for img in img_files:
 				full_path = path + '/' + img
 				img_surf = pygame.image.load(full_path).convert_alpha()
-				img_surf = pygame.transform.scale(img_surf,(img_surf.get_width() * SCALE, img_surf.get_height() * SCALE))
+				img_surf = pygame.transform.scale_by(img_surf, SCALE)
 				surf_list.append(img_surf)
 
 		return surf_list
 
-	def get_image(self, path, size, pos):
+		print(surf_list)
+
+	def get_image(self, path, pos):
 		surf = pygame.image.load(path).convert_alpha()
-		surf = pygame.transform.scale(surf, size)
+		surf = pygame.transform.scale_by(surf, SCALE)
 		rect = surf.get_rect(center = pos)
 		return(surf, rect)
 
@@ -138,9 +154,9 @@ class Game():
 		self.screen.blit(surf, rect)
 
 	def run(self):
-		dt = self.clock.tick() * .001 * FPS
+		dt = self.clock.tick(FPS)/1000
 		self.get_events()
-		self.update(dt)
+		self.update()
 		self.render(self.screen)
 
 if __name__ == "__main__":

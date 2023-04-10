@@ -6,7 +6,7 @@ class Intro(State):
 	def __init__(self, game):
 		State.__init__(self, game)
 
-	def update(self, dt):
+	def update(self):
 		if 	ACTIONS['return']:
 			Zone(self.game).enter_state()
 		self.game.reset_keys()
