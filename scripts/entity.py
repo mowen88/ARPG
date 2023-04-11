@@ -35,11 +35,49 @@ class Entity(Object):
 				group.remove(self)
 				self.zone.layers[new_group].add(self)
 
-	def animate(self):
+	def animate(self, state):
 		self.frame_index += 0.2
-		if self.frame_index >= len(self.animations[self.state]):
+		if self.frame_index >= len(self.animations[state]):
 			self.frame_index = 0
-		self.image = self.animations[self.state][int(self.frame_index)]
+		self.image = self.animations[state][int(self.frame_index)]
+
+	def accelerate(self):
+		if self.moving_down:
+			self.vel.y += self.acc
+		elif self.moving_up:
+			self.vel.y -= self.acc
+
+		if self.moving_right:
+			self.vel.x += self.acc
+		elif self.moving_left:
+			self.vel.x -= self.acc
+
+	def decelerate(self):
+		
+		if self.vel.y > 0:
+			self.vel.y -= self.friction
+		elif self.vel.y < 0:
+			self.vel.y += self.friction
+		else:
+			self.vel.y = 0
+
+		if self.vel.x > 0:
+			self.vel.x -= self.friction
+		elif self.vel.x < 0:
+			self.vel.x += self.friction
+		else:
+			self.vel.x = 0
+
+	def move(self):
+
+		# normalize speed for diagonal, max speed may be lower depending on acc and friction values (might resolve to a lower value than the max speed as friction builds up)
+		if self.vel.magnitude() >= self.max_speed:
+			self.vel = self.vel.normalize() * self.max_speed
+	
+		# move the entity
+		self.hitbox.center += self.vel
+		self.rect.center = self.hitbox.center
+
 
 	def update(self):
 		pass
@@ -52,12 +90,12 @@ class Player(Entity):
 	def __init__(self, game, zone, groups, pos, surf):
 		super().__init__(game, zone, groups, pos, surf)
 
-		self.acc = 0.3
-		self.friction = 0.3
+		self.acc = 0.4
+		self.friction = 0.4
 		self.max_speed = 3
 
 		self.import_imgs()
-		self.state = IdleState()
+		self.state = IdleState('up')
 		self.animation_type = 'loop'
 		self.frame_index = 0
 
@@ -111,48 +149,14 @@ class Player(Entity):
 			self.moving_up = False
 
 
-	def move_logic(self):
-		# y direction
-		if self.moving_down:
-			self.state = 'down'
-			self.vel.y += self.acc
-		elif self.moving_up:
-			self.state = 'up'
-			self.vel.y -= self.acc
-		elif self.vel.y > 0:
-			self.vel.y -= self.friction
-		else:
-			self.vel.y += self.friction
+	# def change_state(self, new_state, new_frame_rate, new_animation_type):
+	# 	if self.state != new_state:
+	# 		self.frame_index = 0
+	# 		self.state = new_state
+	# 		self.frame_rate = new_frame_rate
+	# 		self.animation_type = new_animation_type
 
-		# x direction
-		if self.moving_right:
-			self.state = 'right'
-			self.vel.x += self.acc
-		elif self.moving_left:
-			self.state = 'left'
-			self.vel.x -= self.acc
-		elif self.vel.x > 0:
-			self.vel.x -= self.friction
-		else:
-			self.vel.x += self.friction
-
-		# normalize speed for diagonal, max speed may be lower depending on acc and friction values (might resolve to a lower value than the max speed as friction builds up)
-		if self.vel.magnitude() >= self.max_speed:
-			self.vel = self.vel.normalize() * self.max_speed
-	
-		# move the entity
-		self.hitbox.center += self.vel
-		self.rect.center = self.hitbox.center
-
-	def change_state(self, new_state, new_frame_rate, new_animation_type):
-		if self.state != new_state:
-			self.frame_index = 0
-			self.state = new_state
-			self.frame_rate = new_frame_rate
-			self.animation_type = new_animation_type
-
-	def set_state(self):
-		pass
+	# def set_state(self):
 		# initialize states in order of priority...
 		
 
@@ -168,11 +172,8 @@ class Player(Entity):
 
 	def update(self):
 		#self.input()
-		self.state_logic()
 		self.state.update(self)
-
-		#self.animate()
-		self.move_logic()
+		self.state_logic()
 
 
 	def render(self, screen):
