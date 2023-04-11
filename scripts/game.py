@@ -90,6 +90,8 @@ class Game():
 				elif event.button == 2:
 					ACTIONS['scroll_up'] = True
 
+				print(event.button)
+
 			if event.type == pygame.MOUSEBUTTONUP:
 
 				if event.button == 1:
@@ -103,8 +105,8 @@ class Game():
 
 
 	def reset_keys(self):
-		for key_pressed in ACTIONS:
-			ACTIONS[key_pressed] = False
+		for action in ACTIONS:
+			ACTIONS[action] = False
 
 	def update(self):
 		pygame.display.set_caption(str(round(self.clock.get_fps(), 2)))

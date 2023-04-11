@@ -52,19 +52,19 @@ class Entity(Object):
 		elif self.moving_left:
 			self.vel.x -= self.acc
 
-	def decelerate(self):
+	def decelerate(self, friction):
 		
 		if self.vel.y > 0:
-			self.vel.y -= self.friction
+			self.vel.y -= friction
 		elif self.vel.y < 0:
-			self.vel.y += self.friction
+			self.vel.y += friction
 		else:
 			self.vel.y = 0
 
 		if self.vel.x > 0:
-			self.vel.x -= self.friction
+			self.vel.x -= friction
 		elif self.vel.x < 0:
-			self.vel.x += self.friction
+			self.vel.x += friction
 		else:
 			self.vel.x = 0
 
@@ -114,7 +114,7 @@ class Player(Entity):
 		self.state = new_state if new_state is not None else self.state
 		
 	def import_imgs(self):
-		self.animations = {'up':[], 'down':[], 'left':[], 'right':[], 'up_idle':[], 'down_idle':[], 'left_idle':[], 'right_idle':[]}
+		self.animations = {'attacking':[], 'up':[], 'down':[], 'left':[], 'right':[], 'up_idle':[], 'down_idle':[], 'left_idle':[], 'right_idle':[]}
 
 		for animation in self.animations.keys():
 			full_path = '../assets/player/' + animation

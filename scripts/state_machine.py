@@ -28,18 +28,33 @@ class IdleState:
 
 		
 	def update(self, player):
-		player.decelerate()
+		player.decelerate(player.friction)
 		player.move()
 		player.animate(self.direction + '_idle')
-		
 
+class AttackState:
+	def __init__(self, player, direction):
+		self.direction = direction
+		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, pygame.mouse.get_pos())[1] * 5
+
+	def state_logic(self, player):
+		if player.vel.magnitude() < 0.5:
+			return MoveState(player.vel, self.direction)
+			
+	def update(self, player):
+		player.decelerate(0.1)
+		player.move()
+		player.animate('attacking')
 
 class MoveState:
 	def __init__(self, vel, direction):
 		self.direction = direction
 
 	def state_logic(self, player):
-		
+
+		if ACTIONS['left_click']:
+			return AttackState(player, self.direction)
+
 		# y direction
 		if ACTIONS['down']:
 			self.direction = 'down'
@@ -70,7 +85,6 @@ class MoveState:
 
 		if not (ACTIONS['down'] or ACTIONS['up'] or ACTIONS['right'] or ACTIONS['left']):
 			return IdleState(self.direction)
-			
 
 	def update(self, player):
 		player.accelerate()
