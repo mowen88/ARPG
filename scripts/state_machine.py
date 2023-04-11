@@ -6,6 +6,10 @@ class IdleState:
 		self.direction = direction
 
 	def state_logic(self, player):
+		
+		if ACTIONS['left_click']:
+			return AttackState(player, self.direction)
+
 		if ACTIONS['down']:
 			player.moving_down = True
 			self.direction = 'down'
@@ -55,33 +59,38 @@ class MoveState:
 		if ACTIONS['left_click']:
 			return AttackState(player, self.direction)
 
+		# face the correct direction (if y held first, always face y regardless of x, if x held first, always face x regardless of y)
+		if ACTIONS['down'] and not (ACTIONS['right'] or ACTIONS['left']):
+			self.direction = 'down'
+		elif ACTIONS['up'] and not (ACTIONS['right'] or ACTIONS['left']):
+			self.direction = 'up'
+		if ACTIONS['right'] and not (ACTIONS['down'] or ACTIONS['up']):
+			self.direction = 'right'
+		elif ACTIONS['left'] and not (ACTIONS['down'] or ACTIONS['up']):
+			self.direction = 'left'
+
+
 		# y direction
 		if ACTIONS['down']:
-			self.direction = 'down'
-			player.moving_down = True		
+			player.moving_down = True
 		else:
-			player.moving_down = False
-			
+			player.moving_down = False		
+		
 		if ACTIONS['up']:
-			self.direction = 'up'
 			player.moving_up = True	
 		else:
 			player.moving_up = False
 
 		# x direction
 		if ACTIONS['right']:
-			self.direction = 'right'
 			player.moving_right = True
-			
 		else:
 			player.moving_right = False
 			
 		if ACTIONS['left']:
-			self.direction = 'left'
 			player.moving_left = True
 		else:
 			player.moving_left = False
-
 
 		if not (ACTIONS['down'] or ACTIONS['up'] or ACTIONS['right'] or ACTIONS['left']):
 			return IdleState(self.direction)
