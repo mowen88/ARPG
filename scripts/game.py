@@ -90,8 +90,6 @@ class Game():
 				elif event.button == 2:
 					ACTIONS['scroll_up'] = True
 
-				print(event.button)
-
 			if event.type == pygame.MOUSEBUTTONUP:
 
 				if event.button == 1:

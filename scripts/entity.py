@@ -1,6 +1,6 @@
 import math
 from settings import *
-from state_machine import IdleState
+from state_machine import Idle
 from timer import Timer
 
 class Object(pygame.sprite.Sprite):
@@ -35,10 +35,13 @@ class Entity(Object):
 				group.remove(self)
 				self.zone.layers[new_group].add(self)
 
-	def animate(self, state):
-		self.frame_index += 0.2
+	def animate(self, state, animation_speed, animation_type):
+		self.frame_index += animation_speed
 		if self.frame_index >= len(self.animations[state]):
-			self.frame_index = 0
+			if animation_type == 'loop':
+				self.frame_index = 0
+			else:
+				self.frame_index = len(self.animations[state])-1
 		self.image = self.animations[state][int(self.frame_index)]
 
 	def accelerate(self):
@@ -68,20 +71,18 @@ class Entity(Object):
 		else:
 			self.vel.x = 0
 
-	def move(self):
+	def move(self, max_speed):
 
 		# normalize speed for diagonal, max speed may be lower depending on acc and friction values (might resolve to a lower value than the max speed as friction builds up)
-		if self.vel.magnitude() >= self.max_speed:
-			self.vel = self.vel.normalize() * self.max_speed
+		if self.vel.magnitude() >= max_speed:
+			self.vel = self.vel.normalize() * max_speed
 	
 		# move the entity
 		self.hitbox.center += self.vel
 		self.rect.center = self.hitbox.center
 
-
 	def update(self):
 		pass
-
 
 	def render(self, screen):
 		pass
@@ -95,7 +96,7 @@ class Player(Entity):
 		self.max_speed = 3
 
 		self.import_imgs()
-		self.state = IdleState('up')
+		self.state = Idle('up')
 		self.animation_type = 'loop'
 		self.frame_index = 0
 
@@ -114,7 +115,7 @@ class Player(Entity):
 		self.state = new_state if new_state is not None else self.state
 		
 	def import_imgs(self):
-		self.animations = {'attacking':[], 'up':[], 'down':[], 'left':[], 'right':[], 'up_idle':[], 'down_idle':[], 'left_idle':[], 'right_idle':[]}
+		self.animations = {'down_attack':[], 'up_attack':[], 'right_attack':[], 'left_attack':[], 'up':[], 'down':[], 'left':[], 'right':[], 'up_idle':[], 'down_idle':[], 'left_idle':[], 'right_idle':[]}
 
 		for animation in self.animations.keys():
 			full_path = '../assets/player/' + animation
