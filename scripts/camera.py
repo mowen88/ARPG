@@ -25,7 +25,7 @@ class Camera(pygame.sprite.Group):
 
 
 		for group in Z_LAYERS:
-			for sprite in self.zone.rendered_sprites:
+			for sprite in sorted(self.zone.rendered_sprites, key = lambda sprite: sprite.rect.centery):
 				if sprite in group:
 					offset = sprite.rect.topleft - self.offset
 					self.game.screen.blit(sprite.image, offset)

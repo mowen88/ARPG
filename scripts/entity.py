@@ -3,27 +3,17 @@ from settings import *
 from state_machine import Idle
 from timer import Timer
 
-class Object(pygame.sprite.Sprite):
+class Entity(pygame.sprite.Sprite):
 	def __init__(self, game, zone, groups, pos, surf):
 		super().__init__(groups)
-
-		self.image = surf
-		self.image = pygame.transform.scale_by(self.image, SCALE)
-		self.rect = self.image.get_rect(topleft = pos)
-
-class Entity(Object):
-	def __init__(self, game, zone, groups, pos, surf):
-		super().__init__(game, zone, groups, pos, surf)
 
 		self.game = game
 		self.zone = zone
 
 		self.image = pygame.Surface((25, 25))
 		self.rect = self.image.get_rect(center = pos)
-		self.hitbox = self.rect.copy().inflate(self.image.get_width() * 0.2, self.image.get_height() * 0.2)
-		self.pos = pygame.math.Vector2(self.hitbox.center)
+		self.hitbox = self.rect.copy().inflate(0, 0)
 		self.vel = pygame.math.Vector2()
-		
 		self.acc = 0.25
 		self.friction = 0.25
 		self.max_speed = 2
@@ -35,16 +25,29 @@ class Entity(Object):
 				group.remove(self)
 				self.zone.layers[new_group].add(self)
 
-	def animate(self, state, animation_speed, animation_type):
+	def animate(self, state, animation_speed):
 		self.frame_index += animation_speed
-		if self.frame_index >= len(self.animations[state]):
-			if animation_type == 'loop':
-				self.frame_index = 0
-			else:
-				self.frame_index = len(self.animations[state])-1
+		self.frame_index = self.frame_index % len(self.animations[state])
 		self.image = self.animations[state][int(self.frame_index)]
 
+	def collisions(self, direction):
+		for sprite in self.zone.collidable_sprites:
+			if hasattr(sprite, 'hitbox'):
+				if sprite.hitbox.colliderect(self.hitbox):
+					if direction == 'x':
+						if self.vel.x >= 0:
+							self.hitbox.right = sprite.hitbox.left
+						if self.vel.x <= 0:
+							self.hitbox.left = sprite.hitbox.right
+					if direction == 'y':
+						if self.vel.y >= 0:
+							self.hitbox.bottom = sprite.hitbox.top
+						if self.vel.y <= 0:
+							self.hitbox.top = sprite.hitbox.bottom
+						
+
 	def accelerate(self):
+
 		if self.moving_down:
 			self.vel.y += self.acc
 		elif self.moving_up:
@@ -54,6 +57,7 @@ class Entity(Object):
 			self.vel.x += self.acc
 		elif self.moving_left:
 			self.vel.x -= self.acc
+
 
 	def decelerate(self, friction):
 		
@@ -71,15 +75,23 @@ class Entity(Object):
 		else:
 			self.vel.x = 0
 
-	def move(self, max_speed):
+		# if the movement is less than 0.1 stay still, otherwise player moves up and left slightly?
+		if self.vel.magnitude() < self.acc:
+			self.vel = pygame.math.Vector2()
 
+	def move(self, max_speed):
+		pass
 		# normalize speed for diagonal, max speed may be lower depending on acc and friction values (might resolve to a lower value than the max speed as friction builds up)
 		if self.vel.magnitude() >= max_speed:
 			self.vel = self.vel.normalize() * max_speed
 	
 		# move the entity
-		self.hitbox.center += self.vel
-		self.rect.center = self.hitbox.center
+		self.hitbox.centerx += self.vel.x
+		self.rect.centerx = self.hitbox.centerx
+		self.collisions('x')
+		self.hitbox.centery += self.vel.y
+		self.rect.centery = self.hitbox.centery
+		self.collisions('y')
 
 	def update(self):
 		pass
@@ -96,19 +108,19 @@ class Player(Entity):
 		self.max_speed = 3
 
 		self.import_imgs()
+
 		self.state = Idle('up')
 		self.animation_type = 'loop'
 		self.frame_index = 0
 
-		#self.image = self.animations[self.state][self.frame_index]
 		self.image = self.animations['down_idle'][self.frame_index]
+		self.rect = self.image.get_rect(center = pos)
+		self.hitbox = self.rect.copy().inflate(0, -self.rect.height * 0.2)
+
 
 		self.moving_right, self.moving_left = False, False
 		self.moving_down, self.moving_up = False, False
 		self.cardinal_directions = ['down', 'up', 'right', 'left']
-
-
-		self.attacking = Timer(300)
 
 	def state_logic(self):
 		new_state = self.state.state_logic(self)
@@ -120,7 +132,6 @@ class Player(Entity):
 		for animation in self.animations.keys():
 			full_path = '../assets/player/' + animation
 			self.animations[animation] = self.game.import_folder(full_path)
-
 
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -149,7 +160,6 @@ class Player(Entity):
 		else:
 			self.moving_up = False
 
-
 	# def change_state(self, new_state, new_frame_rate, new_animation_type):
 	# 	if self.state != new_state:
 	# 		self.frame_index = 0
@@ -172,7 +182,7 @@ class Player(Entity):
 		# 			self.change_state(state, 0.2, 'loop')
 
 	def update(self):
-		#self.input()
+		
 		self.state.update(self)
 		self.state_logic()
 

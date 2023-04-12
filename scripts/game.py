@@ -154,7 +154,7 @@ class Game():
 		self.screen.blit(surf, rect)
 
 	def run(self):
-		dt = self.clock.tick(FPS)/1000
+		dt = self.clock.tick(FPS)
 		self.get_events()
 		self.update()
 		self.render(self.screen)

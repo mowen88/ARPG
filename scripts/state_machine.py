@@ -37,7 +37,7 @@ class Idle:
 	def update(self, player):
 		player.decelerate(player.friction)
 		player.move(player.max_speed)
-		player.animate(self.direction + '_idle', 0.2, 'end')
+		player.animate(self.direction + '_idle', 0.2)
 
 class Attack:
 	def __init__(self, player, direction):
@@ -67,7 +67,7 @@ class Attack:
 		player.decelerate(0.2)
 		player.move(self.lunge_speed)
 		self.get_angle(player)
-		player.animate(self.direction + '_attack', 0.2, 'loop')
+		player.animate(self.direction + '_attack', 0.2)
 
 class Dash:
 	def __init__(self, player, direction):
@@ -94,7 +94,7 @@ class Dash:
 		player.decelerate(0.2)
 		player.move(self.lunge_speed)
 		self.get_angle(player)
-		player.animate(self.direction + '_attack', 0.2, 'loop')
+		player.animate(self.direction + '_attack', 0.2)
 
 class Move:
 	def __init__(self, vel, direction):
@@ -147,7 +147,7 @@ class Move:
 	def update(self, player):
 		player.accelerate()
 		player.move(player.max_speed)
-		player.animate(self.direction, 0.2, 'loop')
+		player.animate(self.direction, 0.2)
 
 
 		
