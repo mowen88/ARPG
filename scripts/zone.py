@@ -3,9 +3,10 @@ from math import atan2, degrees, pi
 from os import walk
 from settings import *
 from pytmx.util_pygame import load_pygame
+from map import Map
 from state import State
 from camera import Camera
-from entity import Player
+from player import Player
 from objects import Object
 
 class Zone(State):
@@ -14,30 +15,37 @@ class Zone(State):
 
 		self.game = game
 
-
 		# sprite groups
 		self.rendered_sprites = Camera(self.game, self)
 		self.updated_sprites = pygame.sprite.Group()
 		self.collidable_sprites = pygame.sprite.Group()
+		self.wall_sprites = pygame.sprite.Group()
+		self.stair_sprites = pygame.sprite.Group()
 
+		Map(self.game, self).place_tileset()
 		self.get_map()
 
 	def get_map(self):
 		tmx_data = load_pygame(f'../zones/{self.game.current_zone}.tmx')
 
+		# add a background
 		Object(self.game, self, [self.rendered_sprites, Z_LAYERS[1]], (0,0), pygame.image.load('../assets/bg.png').convert_alpha())
 
-		
-		for x, y, surf in tmx_data.get_layer_by_name('blocks').tiles():
-			Object(self.game, self, [self.collidable_sprites, self.rendered_sprites, Z_LAYERS[3]], (x * TILESIZE, y * TILESIZE), surf)
+		# for x, y, surf in tmx_data.get_layer_by_name('blocks').tiles():
+		# 	Object(self.game, self, [Z_LAYERS[2]], (x * TILESIZE, y * TILESIZE), surf)
 
-		for obj in tmx_data.get_layer_by_name('objects'):
-			Object(self.game, self, [self.collidable_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), obj.image)
-
+		# add the player
 		for obj in tmx_data.get_layer_by_name('player'):
 			if obj.name == 'start':
-				self.player = Player(self.game, self, [self.updated_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), surf)
+				self.player = Player(self.game, self, [self.updated_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), pygame.Surface((16, 16)))
 				self.target = self.player
+
+		# add the flower pots!
+		for obj in tmx_data.get_layer_by_name('objects'):
+			if obj.name == 'tree':
+				Object(self.game, self, [self.collidable_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), obj.image)
+
+		
 		
 	def get_distance_direction_and_angle(self, point_1, point_2):
 		pos_1 = pygame.math.Vector2(point_1 - self.rendered_sprites.offset)
