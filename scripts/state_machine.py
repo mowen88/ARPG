@@ -4,7 +4,6 @@ from settings import *
 class Idle:
 	def __init__(self, player, direction):
 
-		
 		self.player = player
 		self.direction = direction
 
@@ -46,7 +45,7 @@ class Idle:
 class Attack:
 	def __init__(self, player, direction):
 
-		player.game.reset_keys()
+		ACTIONS['left_click'] = False
 		
 		self.direction = direction
 		self.lunge_speed = 5
@@ -62,14 +61,10 @@ class Attack:
 			return Dash(player, self.direction)
 
 	def get_angle(self, player):
-		if 45 < player.angle < 135:
-			self.direction = 'right'
-		elif 135 < player.angle < 225:
-			self.direction = 'down'
-		elif 225 < player.angle < 315:
-			self.direction = 'left'
-		else:
-			self.direction = 'up'
+		if 45 < player.angle < 135: self.direction = 'right'
+		elif 135 < player.angle < 225: self.direction = 'down'
+		elif 225 < player.angle < 315: self.direction = 'left'
+		else: self.direction = 'up'
 			
 	def update(self, dt, player):
 		player.acc = pygame.math.Vector2()
@@ -89,7 +84,7 @@ class Attack:
 class Dash:
 	def __init__(self, player, direction):
 
-		player.game.reset_keys()
+		ACTIONS['right_click'] = False
 
 		self.direction = direction
 		self.lunge_speed = 15
@@ -102,14 +97,10 @@ class Dash:
 			return Idle(player, self.direction)
 
 	def get_angle(self, player):
-		if 45 < player.angle < 135:
-			self.direction = 'right'
-		elif 135 < player.angle < 225:
-			self.direction = 'down'
-		elif 225 < player.angle < 315:
-			self.direction = 'left'
-		else:
-			self.direction = 'up'
+		if 45 < player.angle < 135: self.direction = 'right'
+		elif 135 < player.angle < 225: self.direction = 'down'
+		elif 225 < player.angle < 315: self.direction = 'left'
+		else: self.direction = 'up'
 			
 	def update(self, dt, player):
 		player.acc = pygame.math.Vector2()
@@ -132,22 +123,27 @@ class Move:
 
 	def state_logic(self, player):
 
-		if ACTIONS['left_click']:
-			return Attack(player, self.direction)
+		if ACTIONS['left_click']: return Attack(player, self.direction)
 
-		if ACTIONS['right_click']:
-			return Dash(player, self.direction)
+		if ACTIONS['right_click']: return Dash(player, self.direction)
 
 		# face the correct direction (if y held first, always face y regardless of x, if x held first, always face x regardless of y)
-		if ACTIONS['down'] and not (ACTIONS['right'] or ACTIONS['left']):
-			self.direction = 'down'
-		elif ACTIONS['up'] and not (ACTIONS['right'] or ACTIONS['left']):
-			self.direction = 'up'
-		if ACTIONS['right'] and not (ACTIONS['down'] or ACTIONS['up']):
-			self.direction = 'right'
-		elif ACTIONS['left'] and not (ACTIONS['down'] or ACTIONS['up']):
-			self.direction = 'left'
+		# if ACTIONS['down'] and not (ACTIONS['right'] or ACTIONS['left']) and player.vel.y > 0:
+		# 	self.direction = 'down'
+		# if ACTIONS['up'] and not (ACTIONS['right'] or ACTIONS['left']) and player.vel.y < 0:
+		# 	self.direction = 'up'
+		# if ACTIONS['right'] and not (ACTIONS['down'] or ACTIONS['up']) and player.vel.x > 0:
+		# 	self.direction = 'right'
+		# if ACTIONS['left'] and not (ACTIONS['down'] or ACTIONS['up']) and player.vel.x < 0:
+		# 	self.direction = 'left'
 
+		# face the correct direction (if y held first, always face y regardless of x, if x held first, always face x regardless of y)
+		if abs(player.vel.y) < player.max_speed/4:
+			if player.vel.x > 0: self.direction = 'right'
+			elif player.vel.x < 0: self.direction = 'left'
+		if abs(player.vel.x) < player.max_speed/4:
+			if player.vel.y > 0: self.direction = 'down'
+			elif player.vel.y < 0: self.direction = 'up'
 
 		# y direction
 		if ACTIONS['down']:
@@ -191,8 +187,9 @@ class Move:
 			player.acc.x -= 1
 
 		player.physics(dt)
-
 		player.animate(self.direction, 0.2 * dt, 'loop')
+
+
 
 
 		

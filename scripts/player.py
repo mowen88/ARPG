@@ -25,7 +25,7 @@ class Player(Object):
 		self.image = self.animations['down_idle'][self.frame_index]
 		self.rect = self.image.get_rect(center = pos)
 		self.pos = pygame.math.Vector2(self.rect.center)
-		self.hitbox = self.rect.copy().inflate(0, -self.rect.height * 0.2)
+		self.hitbox = self.rect.copy().inflate(-self.rect.width * 0.2, -self.rect.height * 0.25)
 
 		self.moving_right, self.moving_left = False, False
 		self.moving_down, self.moving_up = False, False
@@ -38,12 +38,46 @@ class Player(Object):
 			self.frame_index = self.frame_index % len(self.animations[state])
 		self.image = self.animations[state][int(self.frame_index)]
 
-	def collisions(self, direction):
+	def obj_collisions(self, direction):
+		# all walls
+		for sprite in self.zone.collidable_sprites:
+			if hasattr(sprite, 'hitbox'):
+				if sprite.hitbox.colliderect(self.hitbox):
+					
+					if direction == 'x':
+
+						if self.vel.x > 0:
+							self.hitbox.right = sprite.hitbox.left
+							self.acc.x = 0
+							
+						if self.vel.x < 0:
+							self.hitbox.left = sprite.hitbox.right
+							self.acc.x = 0
+
+						self.rect.centerx = self.hitbox.centerx
+						self.pos.x = self.hitbox.centerx
+				
+
+					if direction == 'y':	
+						
+						if self.vel.y > 0:
+							self.hitbox.bottom = sprite.hitbox.top	
+							self.acc.y = 0	
+							
+						if self.vel.y < 0:
+							self.hitbox.top = sprite.hitbox.bottom
+							self.acc.y = 0
+						
+						self.rect.centery = self.hitbox.centery
+						self.pos.y = self.hitbox.centery
+
+
+	def collisions(self, dt, direction):
 
 		# all stairs
 		for sprite in self.zone.stair_sprites:
 			if hasattr(sprite, 'hitbox'):
-				if sprite.rect.colliderect(self.hitbox):
+				if sprite.hitbox.colliderect(self.hitbox):
 
 					if sprite.col == '0':
 						self.vel *= 0.9975
@@ -51,24 +85,22 @@ class Player(Object):
 					elif sprite.col == '1':
 						self.acc.y += self.vel.x
 						if self.moving_up:
-							self.vel.y += self.vel.x * 0.5
+							self.vel.y -= abs(self.vel.x) * dt
 						elif self.moving_down:
-							self.vel.y -= self.vel.x * 0.5
+							self.vel.y += abs(self.vel.x) * dt
 
 					elif sprite.col == '2':
 						self.acc.y -= self.vel.x
 						if self.moving_up:
-							self.vel.y += self.vel.x * 0.5
+							self.vel.y -= abs(self.vel.x) * dt
 						elif self.moving_down:
-							self.vel.y -=  self.vel.x * 0.5
+							self.vel.y += abs(self.vel.x) * dt
 
-					# if self.vel.magnitude() > self.max_speed:
-					# 	self.vel = self.vel.normalize() * self.max_speed
 
 		# all walls
 		for sprite in self.zone.wall_sprites:
 			if hasattr(sprite, 'hitbox'):
-				if sprite.rect.colliderect(self.hitbox):
+				if sprite.hitbox.colliderect(self.hitbox):
 					rel_x = sprite.hitbox.x - self.hitbox.x
 					rel_y = sprite.hitbox.y - self.hitbox.y
 
@@ -79,11 +111,11 @@ class Player(Object):
 						if direction == 'x':
 							if self.vel.x > 0:
 								self.hitbox.right = sprite.hitbox.left
-								self.acc = pygame.math.Vector2()
+								self.acc.x = 0
 								
 							if self.vel.x < 0:
 								self.hitbox.left = sprite.hitbox.right
-								self.acc = pygame.math.Vector2()
+								self.acc.x = 0
 
 							self.rect.centerx = self.hitbox.centerx
 							self.pos.x = self.hitbox.centerx
@@ -91,9 +123,11 @@ class Player(Object):
 						if direction == 'y':	
 							if self.vel.y > 0:
 								self.hitbox.bottom = sprite.hitbox.top
+								self.acc.y = 0
 								
 							if self.vel.y < 0:
 								self.hitbox.top = sprite.hitbox.bottom
+								self.acc.y = 0
 
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
@@ -160,7 +194,8 @@ class Player(Object):
 		self.vel.x = max(-self.max_speed, min(self.vel.x, self.max_speed))
 		if abs(self.vel.x) < 0.05: self.vel.x = 0 
 		self.hitbox.centerx = round(self.pos.x)
-		self.collisions('x')
+		self.collisions(dt, 'x')
+		self.obj_collisions('x')
 		self.rect.centerx = self.hitbox.centerx
 		
 		#y direction
@@ -170,11 +205,15 @@ class Player(Object):
 		self.vel.y = max(-self.max_speed, min(self.vel.y, self.max_speed))
 		if abs(self.vel.y) < 0.05: self.vel.y = 0 
 		self.hitbox.centery = round(self.pos.y)
-		self.collisions('y')
+		self.collisions(dt, 'y')
+		self.obj_collisions('y')
 		self.rect.centery = self.hitbox.centery
 
 		if self.vel.magnitude() > self.max_speed:
 			self.vel = self.vel.normalize() * self.max_speed
+
+		if self.acc.magnitude() < 0.1:
+			self.acc = pygame.math.Vector2()
 
 	def state_logic(self):
 		new_state = self.state.state_logic(self)

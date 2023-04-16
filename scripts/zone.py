@@ -7,7 +7,7 @@ from map import Map
 from state import State
 from camera import Camera
 from player import Player
-from objects import Object
+from objects import Object, Tree
 
 class Zone(State):
 	def __init__(self, game):
@@ -43,7 +43,7 @@ class Zone(State):
 		# add the flower pots!
 		for obj in tmx_data.get_layer_by_name('objects'):
 			if obj.name == 'tree':
-				Object(self.game, self, [self.collidable_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), obj.image)
+				Tree(self.game, self, [self.collidable_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), obj.image)
 
 		
 		
@@ -82,7 +82,7 @@ class Zone(State):
 		self.rendered_sprites.offset_draw(self.target)
 
 		#self.game.render_text(f'{round(self.player.acc.x, 3)}, {round(self.player.acc.y, 3)}', PURPLE, self.game.small_font, RES/2)
-		self.game.render_text(round(self.player.vel, 2), PURPLE, self.game.small_font, RES/2)
+		self.game.render_text(round(self.player.acc, 2), PURPLE, self.game.small_font, RES/2)
 		# self.game.render_text(self.player.moving_right, PURPLE, self.game.small_font, (WIDTH * 0.8, HALF_HEIGHT))
 		# self.game.render_text(self.player.moving_left, PURPLE, self.game.small_font, (WIDTH * 0.2, HALF_HEIGHT))
 		self.game.render_text(self.player.moving_down, PURPLE, self.game.small_font, (HALF_WIDTH, HEIGHT * 0.8))
