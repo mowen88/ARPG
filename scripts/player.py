@@ -49,19 +49,18 @@ class Player(Object):
 						self.vel *= 0.9975
 						
 					elif sprite.col == '1':
-						self.acc.y += 1 * self.vel.x
-						# if self.moving_up:
-						# 	self.acc.y = -1
-						# elif self.moving_down:
-						# 	self.acc.y = 1
-
+						self.acc.y += self.vel.x
+						if self.moving_up:
+							self.vel.y += self.vel.x * 0.5
+						elif self.moving_down:
+							self.vel.y -= self.vel.x * 0.5
 
 					elif sprite.col == '2':
-						self.acc.y -= 1 * self.vel.x
-						# if self.moving_up:
-						# 	self.acc.y = -1
-						# elif self.moving_down:
-						# 	self.acc.y = 1
+						self.acc.y -= self.vel.x
+						if self.moving_up:
+							self.vel.y += self.vel.x * 0.5
+						elif self.moving_down:
+							self.vel.y -=  self.vel.x * 0.5
 
 					# if self.vel.magnitude() > self.max_speed:
 					# 	self.vel = self.vel.normalize() * self.max_speed

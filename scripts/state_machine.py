@@ -4,6 +4,7 @@ from settings import *
 class Idle:
 	def __init__(self, player, direction):
 
+		
 		self.player = player
 		self.direction = direction
 
@@ -13,7 +14,6 @@ class Idle:
 
 		if ACTIONS['left_click']:
 			return Attack(player, self.direction)
-			player.game.reset_keys()
 
 		if ACTIONS['right_click']:
 			return Dash(player, self.direction)
@@ -45,6 +45,9 @@ class Idle:
 
 class Attack:
 	def __init__(self, player, direction):
+
+		player.game.reset_keys()
+		
 		self.direction = direction
 		self.lunge_speed = 5
 		self.get_current_direction = pygame.mouse.get_pos()
@@ -85,6 +88,8 @@ class Attack:
 
 class Dash:
 	def __init__(self, player, direction):
+
+		player.game.reset_keys()
 
 		self.direction = direction
 		self.lunge_speed = 15
