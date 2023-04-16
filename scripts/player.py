@@ -15,6 +15,7 @@ class Player(Object):
 		self.friction = -0.5
 		self.max_speed = 2
 		self.vel = pygame.math.Vector2()
+		self.edge = ''
 
 		self.import_imgs()
 
@@ -25,7 +26,7 @@ class Player(Object):
 		self.image = self.animations['down_idle'][self.frame_index]
 		self.rect = self.image.get_rect(center = pos)
 		self.pos = pygame.math.Vector2(self.rect.center)
-		self.hitbox = self.rect.copy().inflate(-self.rect.width * 0.2, -self.rect.height * 0.25)
+		self.hitbox = self.rect.copy().inflate(-self.rect.width * 0.5, -self.rect.height * 0.75)
 
 		self.moving_right, self.moving_left = False, False
 		self.moving_down, self.moving_up = False, False
@@ -38,14 +39,13 @@ class Player(Object):
 			self.frame_index = self.frame_index % len(self.animations[state])
 		self.image = self.animations[state][int(self.frame_index)]
 
-	def obj_collisions(self, direction):
-		# all walls
+	def object_collisions(self, direction):
+		
 		for sprite in self.zone.collidable_sprites:
 			if hasattr(sprite, 'hitbox'):
 				if sprite.hitbox.colliderect(self.hitbox):
 					
 					if direction == 'x':
-
 						if self.vel.x > 0:
 							self.hitbox.right = sprite.hitbox.left
 							self.acc.x = 0
@@ -57,9 +57,7 @@ class Player(Object):
 						self.rect.centerx = self.hitbox.centerx
 						self.pos.x = self.hitbox.centerx
 				
-
-					if direction == 'y':	
-						
+					if direction == 'y':			
 						if self.vel.y > 0:
 							self.hitbox.bottom = sprite.hitbox.top	
 							self.acc.y = 0	
@@ -71,8 +69,7 @@ class Player(Object):
 						self.rect.centery = self.hitbox.centery
 						self.pos.y = self.hitbox.centery
 
-
-	def collisions(self, dt, direction):
+	def wall_and_stair_collisions(self, dt, direction):
 
 		# all stairs
 		for sprite in self.zone.stair_sprites:
@@ -96,7 +93,6 @@ class Player(Object):
 						elif self.moving_down:
 							self.vel.y += abs(self.vel.x) * dt
 
-
 		# all walls
 		for sprite in self.zone.wall_sprites:
 			if hasattr(sprite, 'hitbox'):
@@ -104,7 +100,7 @@ class Player(Object):
 					rel_x = sprite.hitbox.x - self.hitbox.x
 					rel_y = sprite.hitbox.y - self.hitbox.y
 
-					if sprite.col == '5':
+					if sprite.col == '5' or sprite.col == '15':
 
 						# normal square block collisions....
 
@@ -112,10 +108,12 @@ class Player(Object):
 							if self.vel.x > 0:
 								self.hitbox.right = sprite.hitbox.left
 								self.acc.x = 0
+								if sprite.col == '15': self.edge = 'right'
 								
 							if self.vel.x < 0:
 								self.hitbox.left = sprite.hitbox.right
 								self.acc.x = 0
+								if sprite.col == '15': self.edge = 'left'
 
 							self.rect.centerx = self.hitbox.centerx
 							self.pos.x = self.hitbox.centerx
@@ -124,16 +122,18 @@ class Player(Object):
 							if self.vel.y > 0:
 								self.hitbox.bottom = sprite.hitbox.top
 								self.acc.y = 0
+								if sprite.col == '15': self.edge = 'down'
 								
 							if self.vel.y < 0:
 								self.hitbox.top = sprite.hitbox.bottom
 								self.acc.y = 0
+								if sprite.col == '15': self.edge = 'up'
 
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 
 
-					elif sprite.col == '6':
+					elif sprite.col == '6' or sprite.col == '16':
 						# moving right and diagonal up
 						
 						target_y = sprite.hitbox.top + rel_x
@@ -142,11 +142,12 @@ class Player(Object):
 						if self.hitbox.top > target_y - sprite.hitbox.height/2:
 							self.hitbox.top = target_y - sprite.hitbox.height/2
 							self.hitbox.left = target_x - sprite.hitbox.width/2
+							if sprite.col == '16': self.edge = 'right_down'
 
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 
-					elif sprite.col == '7':
+					elif sprite.col == '7' or sprite.col == '17':
 						# moving left and diagonal up
 						
 						target_y = sprite.hitbox.top - rel_x
@@ -155,11 +156,12 @@ class Player(Object):
 						if self.hitbox.top > target_y - sprite.hitbox.height/2:
 							self.hitbox.top = target_y - sprite.hitbox.height/2
 							self.hitbox.left = target_x + sprite.hitbox.width/2
+							if sprite.col == '17': self.edge = 'left_down'
 
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 
-					elif sprite.col == '8':
+					elif sprite.col == '8' or sprite.col == '18':
 						# moving right and diagonal down
 						
 						target_y = sprite.hitbox.top - rel_x
@@ -168,11 +170,12 @@ class Player(Object):
 						if self.hitbox.top < target_y + sprite.hitbox.height/2:
 							self.hitbox.top = target_y + sprite.hitbox.height/2
 							self.hitbox.left = target_x - sprite.hitbox.width/2
+							if sprite.col == '18': self.edge = 'right_up'
 
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 
-					elif sprite.col == '9':
+					elif sprite.col == '9' or sprite.col == '19':
 						# moving left and diagonal down
 						
 						target_y = sprite.hitbox.top + rel_x
@@ -181,9 +184,12 @@ class Player(Object):
 						if self.hitbox.top < target_y + sprite.hitbox.height/2:
 							self.hitbox.top = target_y + sprite.hitbox.height/2 
 							self.hitbox.left = target_x + sprite.hitbox.width/2
+							if sprite.col == '19': self.edge = 'left_up'
 
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
+
+
 		
 	def physics(self, dt):
 		
@@ -194,8 +200,8 @@ class Player(Object):
 		self.vel.x = max(-self.max_speed, min(self.vel.x, self.max_speed))
 		if abs(self.vel.x) < 0.05: self.vel.x = 0 
 		self.hitbox.centerx = round(self.pos.x)
-		self.collisions(dt, 'x')
-		self.obj_collisions('x')
+		self.wall_and_stair_collisions(dt, 'x')
+		self.object_collisions('x')
 		self.rect.centerx = self.hitbox.centerx
 		
 		#y direction
@@ -205,10 +211,10 @@ class Player(Object):
 		self.vel.y = max(-self.max_speed, min(self.vel.y, self.max_speed))
 		if abs(self.vel.y) < 0.05: self.vel.y = 0 
 		self.hitbox.centery = round(self.pos.y)
-		self.collisions(dt, 'y')
-		self.obj_collisions('y')
+		self.wall_and_stair_collisions(dt, 'y')
+		self.object_collisions('y')
 		self.rect.centery = self.hitbox.centery
-
+		
 		if self.vel.magnitude() > self.max_speed:
 			self.vel = self.vel.normalize() * self.max_speed
 
@@ -230,9 +236,9 @@ class Player(Object):
 			self.animations[animation] = self.game.import_folder(full_path)
 
 	def update(self, dt):
-		
 		self.state.update(dt, self)
 		self.state_logic()
+
 
 	def render(self, screen):
 		pass

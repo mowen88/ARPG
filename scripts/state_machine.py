@@ -6,7 +6,8 @@ class Idle:
 
 		self.player = player
 		self.direction = direction
-
+		
+		self.player.edge = ''
 		self.player.frame_index = 0
 
 	def state_logic(self, player):
@@ -93,6 +94,10 @@ class Dash:
 		player.angle = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[2]
 
 	def state_logic(self, player):
+		# if player.edge_collided() and player.vel.magnitude() < player.max_speed:
+		# 	player.vel = pygame.math.Vector2()
+		# 	return Idle(player, self.direction) 
+
 		if player.vel.magnitude() < 0.05:
 			return Idle(player, self.direction)
 
@@ -121,22 +126,7 @@ class Move:
 	def __init__(self, vel, direction):
 		self.direction = direction
 
-	def state_logic(self, player):
-
-		if ACTIONS['left_click']: return Attack(player, self.direction)
-
-		if ACTIONS['right_click']: return Dash(player, self.direction)
-
-		# face the correct direction (if y held first, always face y regardless of x, if x held first, always face x regardless of y)
-		# if ACTIONS['down'] and not (ACTIONS['right'] or ACTIONS['left']) and player.vel.y > 0:
-		# 	self.direction = 'down'
-		# if ACTIONS['up'] and not (ACTIONS['right'] or ACTIONS['left']) and player.vel.y < 0:
-		# 	self.direction = 'up'
-		# if ACTIONS['right'] and not (ACTIONS['down'] or ACTIONS['up']) and player.vel.x > 0:
-		# 	self.direction = 'right'
-		# if ACTIONS['left'] and not (ACTIONS['down'] or ACTIONS['up']) and player.vel.x < 0:
-		# 	self.direction = 'left'
-
+	def get_facing(self, player):
 		# face the correct direction (if y held first, always face y regardless of x, if x held first, always face x regardless of y)
 		if abs(player.vel.y) < player.max_speed/4:
 			if player.vel.x > 0: self.direction = 'right'
@@ -145,6 +135,15 @@ class Move:
 			if player.vel.y > 0: self.direction = 'down'
 			elif player.vel.y < 0: self.direction = 'up'
 
+	def state_logic(self, player):
+
+		self.get_facing(player)
+
+		if ACTIONS['left_click']: return Attack(player, self.direction)
+
+		if ACTIONS['right_click']: return Dash(player, self.direction)
+
+	
 		# y direction
 		if ACTIONS['down']:
 			player.moving_down = True
@@ -167,9 +166,14 @@ class Move:
 		else:
 			player.moving_left = False
 
+		if player.edge == 'left_up' and not ((ACTIONS['left'] and ACTIONS['down']) or (ACTIONS['right'] and ACTIONS['up'])): return OnEdge(self.direction, player.edge)
+		elif player.edge == 'right_up' and not ((ACTIONS['right'] and ACTIONS['down']) or (ACTIONS['left'] and ACTIONS['up'])): return OnEdge(self.direction, player.edge)
+		if player.edge == 'left_down' and not ((ACTIONS['left'] and ACTIONS['up']) or (ACTIONS['right'] and ACTIONS['down'])): return OnEdge(self.direction, player.edge)
+		elif player.edge == 'right_down' and not ((ACTIONS['right'] and ACTIONS['up']) or (ACTIONS['left'] and ACTIONS['down'])): return OnEdge(self.direction, player.edge)
+		elif player.edge in ['left','right','up','down']: return OnEdge(self.direction, player.edge)
+
 		if player.vel == pygame.math.Vector2():
 			return Idle(player, self.direction)
-
 
 	def update(self, dt, player):
 
@@ -188,6 +192,30 @@ class Move:
 
 		player.physics(dt)
 		player.animate(self.direction, 0.2 * dt, 'loop')
+
+class OnEdge:
+	def __init__(self, direction, edge):
+		self.direction = direction
+		self.edge = edge
+
+	def state_logic(self, player):
+
+		if ACTIONS['right_click']: return Dash(player, self.direction)
+
+		if self.edge == 'left' and not ACTIONS['left']: return Idle(player, self.direction)
+		elif self.edge == 'right' and not ACTIONS['right']: return Idle(player, self.direction)
+		if self.edge == 'up' and not ACTIONS['up']: return Idle(player, self.direction)
+		elif self.edge == 'down' and not ACTIONS['down']: return Idle(player, self.direction)
+
+		if self.edge == 'left_up' and ((ACTIONS['up'] and ACTIONS['right']) or (ACTIONS['down'] and ACTIONS['left']) or not (ACTIONS['up'] or ACTIONS['left'])): return Idle(player, self.direction)
+		elif self.edge == 'right_up' and ((ACTIONS['up'] and ACTIONS['left']) or (ACTIONS['down'] and ACTIONS['right']) or not (ACTIONS['up'] or ACTIONS['right'])): return Idle(player, self.direction)
+		if self.edge == 'left_down' and ((ACTIONS['down'] and ACTIONS['right']) or (ACTIONS['up'] and ACTIONS['left']) or not (ACTIONS['down'] or ACTIONS['left'])): return Idle(player, self.direction)
+		elif self.edge == 'right_down' and ((ACTIONS['down'] and ACTIONS['left']) or (ACTIONS['up'] and ACTIONS['right']) or not (ACTIONS['down'] or ACTIONS['right'])): return Idle(player, self.direction)
+
+	def update(self, dt, player):
+		player.vel = pygame.math.Vector2()
+		player.animate(self.direction + '_idle', 0.2 * dt, 'loop')
+
 
 
 

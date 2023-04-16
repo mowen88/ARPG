@@ -39,6 +39,8 @@ class Map:
 						Wall(self.game, self.zone, [self.zone.wall_sprites, self.zone.rendered_sprites, Z_LAYERS[3]], (x, y), surf, col)
 					if col in '012': # index values from the tiles folder
 						Stairs(self.game, self.zone, [self.zone.stair_sprites, self.zone.rendered_sprites, Z_LAYERS[2]], (x, y), surf, col)
+					if col in ['15','16','17','18','19']: # index values from the tiles folder
+						Wall(self.game, self.zone, [self.zone.wall_sprites, self.zone.rendered_sprites, Z_LAYERS[3]], (x, y), surf, col)
 
 
 
