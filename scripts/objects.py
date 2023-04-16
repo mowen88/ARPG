@@ -8,7 +8,7 @@ class Object(pygame.sprite.Sprite):
 		self.image = surf
 		self.image = pygame.transform.scale_by(self.image, SCALE)
 		self.rect = self.image.get_rect(topleft = pos)
-		self.hitbox = self.rect.copy().inflate(0, -self.image.get_height() * 0.2)
+		self.hitbox = self.rect.copy().inflate(-self.image.get_width() * 0.4, -self.image.get_height() * 0.75)
 
 class Wall(Object):
 	def __init__(self, game, zone, groups, pos, surf, col):
@@ -28,7 +28,7 @@ class Stairs(Object):
 		self.col = col
 		self.image = pygame.transform.scale_by(self.image, SCALE)
 		self.rect = self.image.get_rect(topleft = pos)
-		self.hitbox = self.rect.copy().inflate(-self.image.get_width() * 0.4, -self.image.get_height() * 0.4)
+		self.hitbox = self.rect.copy().inflate(-self.image.get_width() * 0.5, -self.image.get_height() * 0.5)
 
 
 

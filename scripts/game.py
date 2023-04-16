@@ -1,4 +1,4 @@
-import sys, pygame, csv
+import sys, pygame, csv, time
 from pygame import mixer
 from os import walk
 from settings import *
@@ -18,9 +18,9 @@ class Game():
 		self.running = True
 
 		#font
-		self.big_font = pygame.font.Font(FONT, int(HEIGHT * 0.15))
-		self.medium_font = pygame.font.Font(FONT, int(HEIGHT * 0.1))
-		self.small_font = pygame.font.Font(FONT, int(HEIGHT * 0.05))
+		self.big_font = pygame.font.Font(FONT, int(HEIGHT * 0.1))
+		self.medium_font = pygame.font.Font(FONT, int(HEIGHT * 0.05))
+		self.small_font = pygame.font.Font(FONT, int(HEIGHT * 0.03))
 
 		# states
 		self.stack = []
@@ -106,9 +106,9 @@ class Game():
 		for action in ACTIONS:
 			ACTIONS[action] = False
 
-	def update(self):
+	def update(self, dt):
 		pygame.display.set_caption(str(round(self.clock.get_fps(), 2)))
-		self.stack[-1].update()
+		self.stack[-1].update(dt)
 
 	def render(self, screen):
 		self.stack[-1].render(screen)
@@ -148,15 +148,16 @@ class Game():
 		rect = surf.get_rect(center = pos)
 		return(surf, rect)
 
+
 	def render_text(self, text, colour, font, pos):
 		surf = font.render(str(text), False, colour)
 		rect = surf.get_rect(center = pos)
 		self.screen.blit(surf, rect)
 
 	def run(self):
-		dt = self.clock.tick(FPS)
+		dt = self.clock.tick() * 0.001 * FPS
 		self.get_events()
-		self.update()
+		self.update(dt)
 		self.render(self.screen)
 
 if __name__ == "__main__":

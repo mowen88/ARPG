@@ -2,13 +2,18 @@ import pygame
 from settings import *
 
 class Idle:
-	def __init__(self, direction):
+	def __init__(self, player, direction):
+
+		self.player = player
 		self.direction = direction
+
+		self.player.frame_index = 0
 
 	def state_logic(self, player):
 
 		if ACTIONS['left_click']:
 			return Attack(player, self.direction)
+			player.game.reset_keys()
 
 		if ACTIONS['right_click']:
 			return Dash(player, self.direction)
@@ -33,25 +38,22 @@ class Idle:
 			self.direction = 'left'
 			return Move(player.vel, self.direction)
 
-		
-	def update(self, player):
-		player.decelerate(player.friction)
-		player.animate(self.direction + '_idle', 0.1, 'end')
-		player.move(player.max_speed)
 
-		
-
+	def update(self, dt, player):
+		player.physics(dt)
+		player.animate(self.direction + '_idle', 0.2 * dt, 'end')
 
 class Attack:
 	def __init__(self, player, direction):
 		self.direction = direction
-		self.lunge_speed = 3
-		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, pygame.mouse.get_pos())[1] * self.lunge_speed
-		player.angle = player.zone.get_distance_direction_and_angle(player.hitbox.center, pygame.mouse.get_pos())[2]
+		self.lunge_speed = 5
+		self.get_current_direction = pygame.mouse.get_pos()
+		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
+		player.angle = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[2]
 
 	def state_logic(self, player):
-		if player.vel.magnitude() < 0.5:
-			return Move(player.vel, self.direction)
+		if player.vel.magnitude() < 0.05:
+			return Idle(player, self.direction)
 
 		if ACTIONS['right_click']:
 			return Dash(player, self.direction)
@@ -66,22 +68,33 @@ class Attack:
 		else:
 			self.direction = 'up'
 			
-	def update(self, player):
-		player.decelerate(0.2)
-		player.move(self.lunge_speed)
+	def update(self, dt, player):
+		player.acc = pygame.math.Vector2()
+
 		self.get_angle(player)
-		player.animate(self.direction + '_attack', 0.2, 'end')
+
+		self.lunge_speed -= 0.05
+		self.lunge_speed *= 0.99
+
+		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
+		player.vel = player.vel.normalize() * self.lunge_speed
+		
+		
+		player.physics(dt)
+		player.animate(self.direction + '_attack', 0.2 * dt, 'end')
 
 class Dash:
 	def __init__(self, player, direction):
+
 		self.direction = direction
-		self.lunge_speed = 10
-		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, pygame.mouse.get_pos())[1] * self.lunge_speed
-		player.angle = player.zone.get_distance_direction_and_angle(player.hitbox.center, pygame.mouse.get_pos())[2]
+		self.lunge_speed = 15
+		self.get_current_direction = pygame.mouse.get_pos()
+		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
+		player.angle = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[2]
 
 	def state_logic(self, player):
-		if player.vel.magnitude() < player.acc:
-			return Move(player.vel, self.direction)
+		if player.vel.magnitude() < 0.05:
+			return Idle(player, self.direction)
 
 	def get_angle(self, player):
 		if 45 < player.angle < 135:
@@ -93,11 +106,20 @@ class Dash:
 		else:
 			self.direction = 'up'
 			
-	def update(self, player):
-		player.decelerate(0.3)
-		player.move(self.lunge_speed)
+	def update(self, dt, player):
+		player.acc = pygame.math.Vector2()
+
 		self.get_angle(player)
-		player.animate(self.direction + '_attack', 0.2, 'end')
+
+		self.lunge_speed -= 0.05
+		self.lunge_speed *= 0.99
+
+		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
+		player.vel = player.vel.normalize() * self.lunge_speed
+
+		
+		player.physics(dt)
+		player.animate(self.direction + '_attack', 0.2 * dt, 'end')
 
 class Move:
 	def __init__(self, vel, direction):
@@ -144,13 +166,28 @@ class Move:
 		else:
 			player.moving_left = False
 
-		if not (ACTIONS['down'] or ACTIONS['up'] or ACTIONS['right'] or ACTIONS['left']):
-			return Idle(self.direction)
+		if player.vel == pygame.math.Vector2():
+			return Idle(player, self.direction)
 
-	def update(self, player):
-		player.accelerate()
-		player.move(player.max_speed)
-		player.animate(self.direction, 0.2, 'loop')
+
+	def update(self, dt, player):
+
+		#player movement
+		player.acc = pygame.math.Vector2()
+
+		if player.moving_down and player.vel.y >= 0:
+			player.acc.y += 1
+		elif player.moving_up and player.vel.y <= 0:
+			player.acc.y -= 1
+
+		if player.moving_right and player.vel.x >= 0:
+			player.acc.x += 1
+		elif player.moving_left and player.vel.x <= 0:
+			player.acc.x -= 1
+
+		player.physics(dt)
+
+		player.animate(self.direction, 0.2 * dt, 'loop')
 
 
 		
