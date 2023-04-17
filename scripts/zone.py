@@ -8,12 +8,15 @@ from state import State
 from camera import Camera
 from player import Player
 from objects import Object, Tree
+from weapons import Sword, Gun
 
 class Zone(State):
 	def __init__(self, game):
 		State.__init__(self, game)
 
 		self.game = game
+
+		self.melee_sprite = pygame.sprite.GroupSingle()
 
 		# sprite groups
 		self.rendered_sprites = Camera(self.game, self)
@@ -22,6 +25,8 @@ class Zone(State):
 		self.wall_sprites = pygame.sprite.Group()
 		self.stair_sprites = pygame.sprite.Group()
 		self.void_sprites = pygame.sprite.Group()
+
+		
 
 		Map(self.game, self).place_tileset()
 		self.get_map()
@@ -46,7 +51,8 @@ class Zone(State):
 			if obj.name == 'tree':
 				Tree(self.game, self, [self.collidable_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), obj.image)
 
-		
+	def create_melee(self):
+		self.melee_sprite = Sword(self.game, self, [self.updated_sprites, self.rendered_sprites, Z_LAYERS[3]], self.player.hitbox.center)
 		
 	def get_distance_direction_and_angle(self, point_1, point_2):
 		pos_1 = pygame.math.Vector2(point_1 - self.rendered_sprites.offset)
@@ -67,6 +73,8 @@ class Zone(State):
 		return(distance, direction, angle)
 
 	def return_to_menu(self):
+		if ACTIONS['space']:
+			self.create_melee()
 		if ACTIONS['return']:
 			self.exit_state()
 			self.game.reset_keys()

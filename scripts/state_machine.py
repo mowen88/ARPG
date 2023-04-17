@@ -11,7 +11,7 @@ class Idle:
 		self.player.frame_index = 0
 
 	def state_logic(self, player):
-
+	
 		if ACTIONS['left_click']:
 			return Attack(player, self.direction)
 
@@ -46,6 +46,8 @@ class Idle:
 class Attack:
 	def __init__(self, player, direction):
 
+		player.zone.create_melee()
+		
 		ACTIONS['left_click'] = False
 		
 		self.direction = direction
@@ -118,7 +120,6 @@ class Dash:
 		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
 		player.vel = player.vel.normalize() * self.lunge_speed
 
-		
 		player.physics(dt)
 		player.animate(self.direction + '_attack', 0.2 * dt, 'end')
 

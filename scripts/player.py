@@ -107,12 +107,12 @@ class Player(Object):
 						if direction == 'x':
 							if self.vel.x > 0:
 								self.hitbox.right = sprite.hitbox.left
-								self.acc.x = 0
+								self.acc = pygame.math.Vector2()
 								if sprite.col == '15': self.edge = 'right'
 								
 							if self.vel.x < 0:
 								self.hitbox.left = sprite.hitbox.right
-								self.acc.x = 0
+								self.acc = pygame.math.Vector2()
 								if sprite.col == '15': self.edge = 'left'
 
 							self.rect.centerx = self.hitbox.centerx
@@ -121,12 +121,12 @@ class Player(Object):
 						if direction == 'y':	
 							if self.vel.y > 0:
 								self.hitbox.bottom = sprite.hitbox.top
-								self.acc.y = 0
+								self.acc = pygame.math.Vector2()
 								if sprite.col == '15': self.edge = 'down'
 								
 							if self.vel.y < 0:
 								self.hitbox.top = sprite.hitbox.bottom
-								self.acc.y = 0
+								self.acc = pygame.math.Vector2()
 								if sprite.col == '15': self.edge = 'up'
 
 							self.rect.centery = self.hitbox.centery
@@ -143,7 +143,7 @@ class Player(Object):
 							self.hitbox.top = target_y - sprite.hitbox.height/2
 							self.hitbox.left = target_x - sprite.hitbox.width/2
 							if sprite.col == '16': self.edge = 'right_down'
-
+							self.acc = pygame.math.Vector2()
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 
@@ -157,7 +157,7 @@ class Player(Object):
 							self.hitbox.top = target_y - sprite.hitbox.height/2
 							self.hitbox.left = target_x + sprite.hitbox.width/2
 							if sprite.col == '17': self.edge = 'left_down'
-
+							self.acc = pygame.math.Vector2()
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 
@@ -171,7 +171,7 @@ class Player(Object):
 							self.hitbox.top = target_y + sprite.hitbox.height/2
 							self.hitbox.left = target_x - sprite.hitbox.width/2
 							if sprite.col == '18': self.edge = 'right_up'
-
+							self.acc = pygame.math.Vector2()
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 
@@ -185,7 +185,7 @@ class Player(Object):
 							self.hitbox.top = target_y + sprite.hitbox.height/2 
 							self.hitbox.left = target_x + sprite.hitbox.width/2
 							if sprite.col == '19': self.edge = 'left_up'
-
+							self.acc = pygame.math.Vector2()
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 
@@ -238,7 +238,6 @@ class Player(Object):
 	def update(self, dt):
 		self.state.update(dt, self)
 		self.state_logic()
-
 
 	def render(self, screen):
 		pass
