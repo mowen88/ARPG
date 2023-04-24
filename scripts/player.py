@@ -16,6 +16,7 @@ class Player(Object):
 		self.max_speed = 2
 		self.vel = pygame.math.Vector2()
 		self.edge = ''
+		self.dashing = False
 
 		self.import_imgs()
 
@@ -38,6 +39,8 @@ class Player(Object):
 		else:
 			self.frame_index = self.frame_index % len(self.animations[state])
 		self.image = self.animations[state][int(self.frame_index)]
+
+
 
 	def object_collisions(self, direction):
 		
@@ -69,7 +72,7 @@ class Player(Object):
 						self.rect.centery = self.hitbox.centery
 						self.pos.y = self.hitbox.centery
 
-	def wall_and_stair_collisions(self, dt, direction):
+	def stair_collisions(self, dt):
 
 		# all stairs
 		for sprite in self.zone.stair_sprites:
@@ -77,7 +80,7 @@ class Player(Object):
 				if sprite.hitbox.colliderect(self.hitbox):
 
 					if sprite.col == '0':
-						self.vel *= 0.9975
+						self.vel *= 0.99
 						
 					elif sprite.col == '1':
 						self.acc.y += self.vel.x
@@ -93,6 +96,7 @@ class Player(Object):
 						elif self.moving_down:
 							self.vel.y += abs(self.vel.x) * dt
 
+	def wall_collisions(self, direction):
 		# all walls
 		for sprite in self.zone.wall_sprites:
 			if hasattr(sprite, 'hitbox'):
@@ -101,7 +105,7 @@ class Player(Object):
 					rel_y = sprite.hitbox.y - self.hitbox.y
 
 					if sprite.col == '5' or sprite.col == '15':
-
+						
 						# normal square block collisions....
 
 						if direction == 'x':
@@ -110,11 +114,11 @@ class Player(Object):
 								self.acc = pygame.math.Vector2()
 								if sprite.col == '15': self.edge = 'right'
 								
-							if self.vel.x < 0:
+							if self.vel.x < 0  and self.vel.magnitude():
 								self.hitbox.left = sprite.hitbox.right
 								self.acc = pygame.math.Vector2()
 								if sprite.col == '15': self.edge = 'left'
-
+							
 							self.rect.centerx = self.hitbox.centerx
 							self.pos.x = self.hitbox.centerx
 
@@ -131,7 +135,7 @@ class Player(Object):
 
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
-
+							
 
 					elif sprite.col == '6' or sprite.col == '16':
 						# moving right and diagonal up
@@ -139,59 +143,75 @@ class Player(Object):
 						target_y = sprite.hitbox.top + rel_x
 						target_x = sprite.hitbox.left + rel_y
 
-						if self.hitbox.top > target_y - sprite.hitbox.height/2:
-							self.hitbox.top = target_y - sprite.hitbox.height/2
-							self.hitbox.left = target_x - sprite.hitbox.width/2
+						print(target_x, target_y)
+
+						if self.hitbox.bottom > target_y:
+							self.hitbox.bottom = target_y
+							self.hitbox.centerx = target_x
 							if sprite.col == '16': self.edge = 'right_down'
 							self.acc = pygame.math.Vector2()
+							
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
+							self.rect.centerx = self.hitbox.centerx
+							self.pos.x = self.hitbox.centerx
 
 					elif sprite.col == '7' or sprite.col == '17':
 						# moving left and diagonal up
 						
 						target_y = sprite.hitbox.top - rel_x
-						target_x = sprite.hitbox.left - rel_y
+						target_x = sprite.hitbox.right - rel_y
 
-						if self.hitbox.top > target_y - sprite.hitbox.height/2:
-							self.hitbox.top = target_y - sprite.hitbox.height/2
-							self.hitbox.left = target_x + sprite.hitbox.width/2
+						if self.hitbox.bottom > target_y:
+							self.hitbox.bottom = target_y
+							self.hitbox.centerx = target_x
 							if sprite.col == '17': self.edge = 'left_down'
 							self.acc = pygame.math.Vector2()
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
+							self.rect.centerx = self.hitbox.centerx
+							self.pos.x = self.hitbox.centerx
+
 
 					elif sprite.col == '8' or sprite.col == '18':
 						# moving right and diagonal down
 						
-						target_y = sprite.hitbox.top - rel_x
+						target_y = sprite.hitbox.bottom - rel_x
 						target_x = sprite.hitbox.left - rel_y
 
-						if self.hitbox.top < target_y + sprite.hitbox.height/2:
-							self.hitbox.top = target_y + sprite.hitbox.height/2
-							self.hitbox.left = target_x - sprite.hitbox.width/2
+						if self.hitbox.top < target_y:
+							self.hitbox.top = target_y
+							self.hitbox.right = target_x
 							if sprite.col == '18': self.edge = 'right_up'
 							self.acc = pygame.math.Vector2()
+							
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
+							self.rect.centerx = self.hitbox.centerx
+							self.pos.x = self.hitbox.centerx
+
 
 					elif sprite.col == '9' or sprite.col == '19':
 						# moving left and diagonal down
 						
-						target_y = sprite.hitbox.top + rel_x
-						target_x = sprite.hitbox.left + rel_y
+						target_y = sprite.hitbox.bottom + rel_x
+						target_x = sprite.hitbox.right + rel_y
 
-						if self.hitbox.top < target_y + sprite.hitbox.height/2:
-							self.hitbox.top = target_y + sprite.hitbox.height/2 
-							self.hitbox.left = target_x + sprite.hitbox.width/2
+						if self.hitbox.top < target_y:
+							self.hitbox.top = target_y 
+							self.hitbox.left = target_x
 							if sprite.col == '19': self.edge = 'left_up'
 							self.acc = pygame.math.Vector2()
+							
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
-
+							self.rect.centerx = self.hitbox.centerx
+							self.pos.x = self.hitbox.centerx
 
 		
 	def physics(self, dt):
+		
+		self.stair_collisions(dt)
 		
 		# x direction
 		self.acc.x += self.vel.x * self.friction
@@ -200,7 +220,8 @@ class Player(Object):
 		self.vel.x = max(-self.max_speed, min(self.vel.x, self.max_speed))
 		if abs(self.vel.x) < 0.05: self.vel.x = 0 
 		self.hitbox.centerx = round(self.pos.x)
-		self.wall_and_stair_collisions(dt, 'x')
+	
+		self.wall_collisions('x')
 		self.object_collisions('x')
 		self.rect.centerx = self.hitbox.centerx
 		
@@ -211,7 +232,8 @@ class Player(Object):
 		self.vel.y = max(-self.max_speed, min(self.vel.y, self.max_speed))
 		if abs(self.vel.y) < 0.05: self.vel.y = 0 
 		self.hitbox.centery = round(self.pos.y)
-		self.wall_and_stair_collisions(dt, 'y')
+
+		self.wall_collisions('y')
 		self.object_collisions('y')
 		self.rect.centery = self.hitbox.centery
 		
@@ -223,7 +245,7 @@ class Player(Object):
 
 	def state_logic(self):
 		new_state = self.state.state_logic(self)
-		if new_state is not None:
+		if new_state != None:
 			self.state = new_state
 		else: 
 			self.state

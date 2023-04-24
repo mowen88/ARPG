@@ -4,11 +4,11 @@ from settings import *
 class Idle:
 	def __init__(self, player, direction):
 
-		self.player = player
 		self.direction = direction
 		
-		self.player.edge = ''
-		self.player.frame_index = 0
+		player.edge = ''
+		player.dashing = False
+		player.frame_index = 0
 
 	def state_logic(self, player):
 	
@@ -40,7 +40,8 @@ class Idle:
 
 
 	def update(self, dt, player):
-		player.physics(dt)
+		player.acc = pygame.math.Vector2()
+		player.vel = pygame.math.Vector2()
 		player.animate(self.direction + '_idle', 0.2 * dt, 'end')
 
 class Attack:
@@ -87,6 +88,8 @@ class Attack:
 class Dash:
 	def __init__(self, player, direction):
 
+		player.dashing = True
+
 		ACTIONS['right_click'] = False
 
 		self.direction = direction
@@ -127,18 +130,7 @@ class Move:
 	def __init__(self, vel, direction):
 		self.direction = direction
 
-	def get_facing(self, player):
-		# face the correct direction (if y held first, always face y regardless of x, if x held first, always face x regardless of y)
-		if abs(player.vel.y) < player.max_speed/4:
-			if player.vel.x > 0: self.direction = 'right'
-			elif player.vel.x < 0: self.direction = 'left'
-		if abs(player.vel.x) < player.max_speed/4:
-			if player.vel.y > 0: self.direction = 'down'
-			elif player.vel.y < 0: self.direction = 'up'
-
 	def state_logic(self, player):
-
-		self.get_facing(player)
 
 		if ACTIONS['left_click']: return Attack(player, self.direction)
 
@@ -173,7 +165,7 @@ class Move:
 		elif player.edge == 'right_down' and not ((ACTIONS['right'] and ACTIONS['up']) or (ACTIONS['left'] and ACTIONS['down'])): return OnEdge(self.direction, player.edge)
 		elif player.edge in ['left','right','up','down']: return OnEdge(self.direction, player.edge)
 
-		if player.vel == pygame.math.Vector2():
+		if player.vel.magnitude() < 0.05:
 			return Idle(player, self.direction)
 
 	def update(self, dt, player):
@@ -183,13 +175,17 @@ class Move:
 
 		if player.moving_down and player.vel.y >= 0:
 			player.acc.y += 1
+			self.direction = 'down'
 		elif player.moving_up and player.vel.y <= 0:
 			player.acc.y -= 1
+			self.direction = 'up'
 
 		if player.moving_right and player.vel.x >= 0:
 			player.acc.x += 1
+			self.direction = 'right'
 		elif player.moving_left and player.vel.x <= 0:
 			player.acc.x -= 1
+			self.direction = 'left'
 
 		player.physics(dt)
 		player.animate(self.direction, 0.2 * dt, 'loop')
