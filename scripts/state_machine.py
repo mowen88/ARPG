@@ -7,7 +7,6 @@ class Idle:
 		self.direction = direction
 		
 		player.edge = ''
-		player.dashing = False
 		player.frame_index = 0
 
 	def state_logic(self, player):
@@ -47,18 +46,19 @@ class Idle:
 class Attack:
 	def __init__(self, player, direction):
 
-		player.zone.create_melee()
+		player.frame_index = 0
 		
 		ACTIONS['left_click'] = False
 		
+		self.timer = 0
 		self.direction = direction
-		self.lunge_speed = 5
+		self.lunge_speed = 2
 		self.get_current_direction = pygame.mouse.get_pos()
 		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
 		player.angle = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[2]
 
 	def state_logic(self, player):
-		if player.vel.magnitude() < 0.05:
+		if self.timer > 25:
 			return Idle(player, self.direction)
 
 		if ACTIONS['right_click']:
@@ -71,29 +71,30 @@ class Attack:
 		else: self.direction = 'up'
 			
 	def update(self, dt, player):
+
+		self.timer += dt
+
 		player.acc = pygame.math.Vector2()
 
 		self.get_angle(player)
 
-		self.lunge_speed -= 0.05
-		self.lunge_speed *= 0.99
+		if player.vel.magnitude() > 0.01:
+			self.lunge_speed -= 0.1 * dt
+			self.lunge_speed *= 0.99
 
-		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
-		player.vel = player.vel.normalize() * self.lunge_speed
-		
+			player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
+			player.vel = player.vel.normalize() * self.lunge_speed
 		
 		player.physics(dt)
-		player.animate(self.direction + '_attack', 0.2 * dt, 'end')
+		player.animate(self.direction + '_attack', 0.3 * dt, 'end')
 
 class Dash:
 	def __init__(self, player, direction):
 
-		player.dashing = True
-
 		ACTIONS['right_click'] = False
 
 		self.direction = direction
-		self.lunge_speed = 15
+		self.lunge_speed = player.dash_lunge_speed
 		self.get_current_direction = pygame.mouse.get_pos()
 		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
 		player.angle = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[2]
@@ -111,20 +112,21 @@ class Dash:
 		elif 135 < player.angle < 225: self.direction = 'down'
 		elif 225 < player.angle < 315: self.direction = 'left'
 		else: self.direction = 'up'
+
 			
 	def update(self, dt, player):
 		player.acc = pygame.math.Vector2()
 
 		self.get_angle(player)
 
-		self.lunge_speed -= 0.05
+		self.lunge_speed -= 0.1 * dt
 		self.lunge_speed *= 0.99
 
 		player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
 		player.vel = player.vel.normalize() * self.lunge_speed
 
 		player.physics(dt)
-		player.animate(self.direction + '_attack', 0.2 * dt, 'end')
+		player.animate(self.direction + '_dash', 0.2 * dt, 'end')
 
 class Move:
 	def __init__(self, vel, direction):

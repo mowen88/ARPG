@@ -7,11 +7,7 @@ class Sword(pygame.sprite.Sprite):
 		self.game = game
 		self.zone = zone
 		self.image = pygame.Surface((40,40))
-		
 		self.rect = self.image.get_rect(center = pos)
-
-	def update(self, dt):
-		self.rect.center = self.zone.player.hitbox.center
 
 
 class Gun(pygame.sprite.Sprite):

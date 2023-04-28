@@ -16,7 +16,9 @@ class Player(Object):
 		self.max_speed = 2
 		self.vel = pygame.math.Vector2()
 		self.edge = ''
-		self.dashing = False
+		self.grounded = True
+		self.fall_off_edge_threshold_speed = self.max_speed * 3
+		self.dash_lunge_speed = 8
 
 		self.import_imgs()
 
@@ -39,8 +41,6 @@ class Player(Object):
 		else:
 			self.frame_index = self.frame_index % len(self.animations[state])
 		self.image = self.animations[state][int(self.frame_index)]
-
-
 
 	def object_collisions(self, direction):
 		
@@ -100,7 +100,7 @@ class Player(Object):
 		# all walls
 		for sprite in self.zone.wall_sprites:
 			if hasattr(sprite, 'hitbox'):
-				if sprite.hitbox.colliderect(self.hitbox):
+				if sprite.hitbox.colliderect(self.hitbox) and self.grounded:
 					rel_x = sprite.hitbox.x - self.hitbox.x
 					rel_y = sprite.hitbox.y - self.hitbox.y
 
@@ -142,8 +142,6 @@ class Player(Object):
 						
 						target_y = sprite.hitbox.top + rel_x
 						target_x = sprite.hitbox.left + rel_y
-
-						print(target_x, target_y)
 
 						if self.hitbox.bottom > target_y:
 							self.hitbox.bottom = target_y
@@ -208,9 +206,20 @@ class Player(Object):
 							self.rect.centerx = self.hitbox.centerx
 							self.pos.x = self.hitbox.centerx
 
-		
+	def dashed_off_edge(self):
+		if self.vel.magnitude() > self.fall_off_edge_threshold_speed:
+			if self.edge == 'up' and self.angle > 315 and self.angle < 45: self.grounded = False
+			elif self.edge == 'right_up' and 0 < self.angle < 90: self.grounded = False
+			elif self.edge == 'right' and 45 < self.angle < 135: self.grounded = False
+			elif self.edge == 'right_down' and 90 < self.angle < 180: self.grounded = False
+			elif self.edge == 'down' and 135 < self.angle < 225: self.grounded = False
+			elif self.edge == 'left_down' and 180 < self.angle < 270: self.grounded = False
+			elif self.edge == 'left' and 225 < self.angle < 315: self.grounded = False
+			elif self.edge == 'left_up' and 270 < self.angle < 360: self.grounded = False
+
 	def physics(self, dt):
-		
+		self.dashed_off_edge()
+
 		self.stair_collisions(dt)
 		
 		# x direction
@@ -243,6 +252,10 @@ class Player(Object):
 		if self.acc.magnitude() < 0.1:
 			self.acc = pygame.math.Vector2()
 
+
+
+
+
 	def state_logic(self):
 		new_state = self.state.state_logic(self)
 		if new_state != None:
@@ -251,7 +264,7 @@ class Player(Object):
 			self.state
 		
 	def import_imgs(self):
-		self.animations = {'down_attack':[], 'up_attack':[], 'right_attack':[], 'left_attack':[], 'up':[], 'down':[], 'left':[], 'right':[], 'up_idle':[], 'down_idle':[], 'left_idle':[], 'right_idle':[]}
+		self.animations = {'down_dash':[], 'up_dash':[], 'right_dash':[], 'left_dash':[],'down_attack':[], 'up_attack':[], 'right_attack':[], 'left_attack':[], 'up':[], 'down':[], 'left':[], 'right':[], 'up_idle':[], 'down_idle':[], 'left_idle':[], 'right_idle':[]}
 
 		for animation in self.animations.keys():
 			full_path = '../assets/player/' + animation

@@ -9,7 +9,7 @@
   <image source="../../../ARPG/assets/bg.png" width="512" height="288"/>
  </imagelayer>
  <objectgroup id="3" name="player">
-  <object id="2" name="start" x="652.797" y="123.619">
+  <object id="2" name="start" x="225.464" y="332.952">
    <point/>
   </object>
  </objectgroup>
