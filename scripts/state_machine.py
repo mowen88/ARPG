@@ -58,7 +58,7 @@ class Attack:
 		player.angle = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[2]
 
 	def state_logic(self, player):
-		if self.timer > 25:
+		if self.timer > 10:
 			return Idle(player, self.direction)
 
 		if ACTIONS['right_click']:
@@ -72,7 +72,7 @@ class Attack:
 			
 	def update(self, dt, player):
 
-		self.timer += dt
+		
 
 		player.acc = pygame.math.Vector2()
 
@@ -84,6 +84,8 @@ class Attack:
 
 			player.vel = player.zone.get_distance_direction_and_angle(player.hitbox.center, self.get_current_direction)[1] * self.lunge_speed
 			player.vel = player.vel.normalize() * self.lunge_speed
+		else:
+			self.timer += dt
 		
 		player.physics(dt)
 		player.animate(self.direction + '_attack', 0.3 * dt, 'end')

@@ -101,22 +101,23 @@ class Player(Object):
 		for sprite in self.zone.wall_sprites:
 			if hasattr(sprite, 'hitbox'):
 				if sprite.hitbox.colliderect(self.hitbox) and self.grounded:
-					rel_x = sprite.hitbox.x - self.hitbox.x
-					rel_y = sprite.hitbox.y - self.hitbox.y
+
+					rel_x = self.hitbox.x - sprite.hitbox.x
+					rel_y = self.hitbox.y - sprite.hitbox.y
 
 					if sprite.col == '5' or sprite.col == '15':
-						
+						sprite.hitbox = sprite.rect.copy().inflate(0, 0)
 						# normal square block collisions....
 
 						if direction == 'x':
 							if self.vel.x > 0:
 								self.hitbox.right = sprite.hitbox.left
-								self.acc = pygame.math.Vector2()
+								self.acc.x = 0
 								if sprite.col == '15': self.edge = 'right'
 								
 							if self.vel.x < 0  and self.vel.magnitude():
 								self.hitbox.left = sprite.hitbox.right
-								self.acc = pygame.math.Vector2()
+								self.acc.x = 0
 								if sprite.col == '15': self.edge = 'left'
 							
 							self.rect.centerx = self.hitbox.centerx
@@ -125,12 +126,12 @@ class Player(Object):
 						if direction == 'y':	
 							if self.vel.y > 0:
 								self.hitbox.bottom = sprite.hitbox.top
-								self.acc = pygame.math.Vector2()
+								self.acc.y = 0
 								if sprite.col == '15': self.edge = 'down'
 								
 							if self.vel.y < 0:
 								self.hitbox.top = sprite.hitbox.bottom
-								self.acc = pygame.math.Vector2()
+								self.acc.y = 0
 								if sprite.col == '15': self.edge = 'up'
 
 							self.rect.centery = self.hitbox.centery
@@ -139,32 +140,35 @@ class Player(Object):
 
 					elif sprite.col == '6' or sprite.col == '16':
 						# moving right and diagonal up
+						sprite.hitbox = sprite.rect.copy().inflate(-sprite.rect.width * 0.1, -sprite.rect.height * 0.1)
 						
-						target_y = sprite.hitbox.top + rel_x
-						target_x = sprite.hitbox.left + rel_y
+						target_y = sprite.hitbox.top - rel_x
+						target_x = sprite.hitbox.left - rel_y
 
 						if self.hitbox.bottom > target_y:
+							self.vel.y -= 0.4
+							self.vel.x -= 0.4
 							self.hitbox.bottom = target_y
 							self.hitbox.centerx = target_x
 							if sprite.col == '16': self.edge = 'right_down'
 							self.acc = pygame.math.Vector2()
 							
-							self.rect.centery = self.hitbox.centery
-							self.pos.y = self.hitbox.centery
-							self.rect.centerx = self.hitbox.centerx
-							self.pos.x = self.hitbox.centerx
+							self.rect.center = self.hitbox.center
+							self.pos.x, self.pos.y = self.hitbox.centerx,self.hitbox.centery
+							
 
 					elif sprite.col == '7' or sprite.col == '17':
 						# moving left and diagonal up
-						
-						target_y = sprite.hitbox.top - rel_x
-						target_x = sprite.hitbox.right - rel_y
 
-						if self.hitbox.bottom > target_y:
+						target_y = sprite.hitbox.top + rel_x
+						target_x = sprite.hitbox.right + rel_y
+
+						if self.hitbox.bottom > target_y and direction == 'y':
 							self.hitbox.bottom = target_y
 							self.hitbox.centerx = target_x
 							if sprite.col == '17': self.edge = 'left_down'
 							self.acc = pygame.math.Vector2()
+
 							self.rect.centery = self.hitbox.centery
 							self.pos.y = self.hitbox.centery
 							self.rect.centerx = self.hitbox.centerx
@@ -174,10 +178,10 @@ class Player(Object):
 					elif sprite.col == '8' or sprite.col == '18':
 						# moving right and diagonal down
 						
-						target_y = sprite.hitbox.bottom - rel_x
-						target_x = sprite.hitbox.left - rel_y
+						target_y = sprite.hitbox.bottom + rel_x
+						target_x = sprite.hitbox.left + rel_y
 
-						if self.hitbox.top < target_y:
+						if self.hitbox.top < target_y and direction == 'x':
 							self.hitbox.top = target_y
 							self.hitbox.right = target_x
 							if sprite.col == '18': self.edge = 'right_up'
@@ -189,11 +193,11 @@ class Player(Object):
 							self.pos.x = self.hitbox.centerx
 
 
-					elif sprite.col == '9' or sprite.col == '19':
+					elif sprite.col == ('9' or '19'):
 						# moving left and diagonal down
-						
-						target_y = sprite.hitbox.bottom + rel_x
-						target_x = sprite.hitbox.right + rel_y
+	
+						target_y = sprite.hitbox.bottom - rel_x
+						target_x = sprite.hitbox.right - rel_y
 
 						if self.hitbox.top < target_y:
 							self.hitbox.top = target_y 

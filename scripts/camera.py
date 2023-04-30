@@ -17,8 +17,8 @@ class Camera(pygame.sprite.Group):
 	def offset_draw(self, target):
 		self.game.screen.fill(GREEN)
 
-		self.offset.x += (target.rect.centerx - self.offset.x - HALF_WIDTH)/50
-		self.offset.y += (target.rect.centery - self.offset.y - HALF_HEIGHT)/50
+		self.offset.x += (target.rect.centerx - self.offset.x - HALF_WIDTH)
+		self.offset.y += (target.rect.centery - self.offset.y - HALF_HEIGHT)
 	
 		#self.offset += [1, 1] + self.zone.get_distance_direction_and_angle(target.hitbox.center, pygame.mouse.get_pos())[1] * 10
 
