@@ -87,7 +87,7 @@ class Zone(State):
 		self.rendered_sprites.offset_draw(self.target)
 
 		#self.game.render_text(f'{round(self.player.acc.x, 3)}, {round(self.player.acc.y, 3)}', PURPLE, self.game.small_font, RES/2)
-		self.game.render_text(round(self.player.vel, 1), PURPLE, self.game.small_font, RES/2)
+		self.game.render_text(self.player.edge, PURPLE, self.game.small_font, RES/2)
 		self.game.render_text(self.player.state, PURPLE, self.game.small_font, (HALF_WIDTH, HEIGHT * 0.4))
 		# self.game.render_text(self.player.moving_right, PURPLE, self.game.small_font, (WIDTH * 0.8, HALF_HEIGHT))
 		# self.game.render_text(self.player.moving_left, PURPLE, self.game.small_font, (WIDTH * 0.2, HALF_HEIGHT))
