@@ -35,6 +35,7 @@ class Zone(State):
 
 		# add a background
 		Object(self.game, self, [self.rendered_sprites, Z_LAYERS[1]], (0,0), pygame.image.load('../assets/bg.png').convert_alpha())
+		Object(self.game, self, [self.rendered_sprites, Z_LAYERS[2]], (0,TILESIZE), pygame.image.load('../zones/0.png').convert_alpha())
 
 		# for x, y, surf in tmx_data.get_layer_by_name('blocks').tiles():
 		# 	Object(self.game, self, [Z_LAYERS[2]], (x * TILESIZE, y * TILESIZE), surf)

@@ -105,9 +105,10 @@ class Dash:
 		# if player.edge_collided() and player.vel.magnitude() < player.max_speed:
 		# 	player.vel = pygame.math.Vector2()
 		# 	return Idle(player, self.direction) 
-
 		if player.vel.magnitude() < 0.1:
-			return Idle(player, self.direction)
+			if not player.grounded: return Jump(player, self.direction)
+			else: return Idle(player, self.direction)
+
 
 	def get_angle(self, player):
 		if 45 < player.angle < 135: self.direction = 'right'
@@ -228,6 +229,7 @@ class Jump:
 		player.frame_index = 0
 		player.grounded = False
 		self.get_initial_speed(player)
+		print(self.get_z_group(player))
 
 		player.respawner.rect.center = player.rect.center
 		player.zone.target = player.respawner
@@ -254,17 +256,30 @@ class Jump:
 		player.hitbox.center = round(player.pos)
 		player.rect.center = player.hitbox.center
 
-		if player.vel.y > 4 and player.vel.x == 0: 
-			pass#player.vel.y = 4
-			#change to lowest layer
+		if self.direction == 'up' and player.vel.y > 0:
+			pass
+
+	def get_z_group(self, player):
+		for index, group in enumerate(Z_LAYERS):
+			if player in group: 
+				if player.vel.y > 2 and 'down' in player.edge:
+					group.remove(player)
+					Z_LAYERS[1].add(player)
+				elif player.vel.y > 0  and not 'down' in player.edge:
+					group.remove(player)
+					Z_LAYERS[1].add(player)
 
 	def state_logic(self, player):
 		pass
 
 	def update(self, dt, player):
+		self.get_z_group(player)
 		self.fall_physics(player, dt)
 
 		player.animate(self.direction + '_edge', 0.2 * dt, 'end')
+
+		if player.vel.y > 4:
+			player.game.screenshaking = True
 
 
 

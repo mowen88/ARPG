@@ -25,7 +25,7 @@ class Game():
 
 		# states
 		self.stack = []
-
+		self.screenshaking = False
 		self.current_zone = 0
 
 		self.load_states()
@@ -102,7 +102,6 @@ class Game():
 				elif event.button == 2:
 					ACTIONS['scroll_up'] = False
 
-
 	def reset_keys(self):
 		for action in ACTIONS:
 			ACTIONS[action] = False
@@ -148,7 +147,6 @@ class Game():
 		surf = pygame.transform.scale_by(surf, SCALE)
 		rect = surf.get_rect(center = pos)
 		return(surf, rect)
-
 
 	def render_text(self, text, colour, font, pos):
 		surf = font.render(str(text), False, colour)
