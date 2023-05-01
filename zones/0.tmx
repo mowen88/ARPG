@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="64" height="36" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="43">
+<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="64" height="36" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="44">
  <editorsettings>
   <export target="0.csv" format="csv"/>
  </editorsettings>
@@ -10,6 +10,9 @@
  </imagelayer>
  <objectgroup id="3" name="player">
   <object id="2" name="start" x="623.464" y="460.286">
+   <point/>
+  </object>
+  <object id="43" name="player2" x="629.333" y="301.333">
    <point/>
   </object>
  </objectgroup>

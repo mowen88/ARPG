@@ -26,6 +26,7 @@ class Zone(State):
 		self.stair_sprites = pygame.sprite.Group()
 		self.void_sprites = pygame.sprite.Group()
 
+		
 		Map(self.game, self).place_tileset()
 		self.get_map()
 
@@ -41,7 +42,7 @@ class Zone(State):
 		# add the player
 		for obj in tmx_data.get_layer_by_name('player'):
 			if obj.name == 'start':
-				self.player = Player(self.game, self, [self.updated_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), pygame.Surface((16, 16)))
+				self.player = Player(self.game, self, [self.updated_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE))
 				self.target = self.player
 
 		# add the flower pots!
@@ -49,6 +50,8 @@ class Zone(State):
 			if obj.name == 'tree':
 				Tree(self.game, self, [self.collidable_sprites, self.rendered_sprites, Z_LAYERS[3]], (obj.x * SCALE, obj.y * SCALE), obj.image)
 
+	def create_melee(self):
+		self.melee_sprite = Sword(self.game, self, [self.updated_sprites, self.rendered_sprites, Z_LAYERS[3]], self.player.rect.center)
 		
 	def get_distance_direction_and_angle(self, point_1, point_2):
 		pos_1 = pygame.math.Vector2(point_1 - self.rendered_sprites.offset)
@@ -88,7 +91,7 @@ class Zone(State):
 
 		#self.game.render_text(f'{round(self.player.acc.x, 3)}, {round(self.player.acc.y, 3)}', PURPLE, self.game.small_font, RES/2)
 		self.game.render_text(self.player.edge, PURPLE, self.game.small_font, RES/2)
-		self.game.render_text(self.player.state, PURPLE, self.game.small_font, (HALF_WIDTH, HEIGHT * 0.4))
+		self.game.render_text(self.player.grounded, PURPLE, self.game.small_font, (HALF_WIDTH, HEIGHT * 0.4))
 		# self.game.render_text(self.player.moving_right, PURPLE, self.game.small_font, (WIDTH * 0.8, HALF_HEIGHT))
 		# self.game.render_text(self.player.moving_left, PURPLE, self.game.small_font, (WIDTH * 0.2, HALF_HEIGHT))
 		self.game.render_text(self.player.moving_down, PURPLE, self.game.small_font, (HALF_WIDTH, HEIGHT * 0.8))

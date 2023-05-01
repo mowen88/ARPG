@@ -117,7 +117,7 @@ class Game():
 		pygame.display.flip()
 
 	def custom_cursor(self):
-		mx, my = pygame.mouse.get_pos()
+		mx, my = pygame.mouse.get_pos() 
 		pygame.mouse.set_visible(False)
 		cursor_img = pygame.image.load('../assets/cursor.png').convert_alpha()
 		cursor_img = pygame.transform.scale_by(cursor_img, SCALE)

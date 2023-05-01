@@ -4,9 +4,9 @@ from state_machine import Idle
 from timer import Timer
 from objects import Object
 
-class Player(Object):
-	def __init__(self, game, zone, groups, pos, surf):
-		super().__init__(game, zone, groups, pos, surf)
+class Player(pygame.sprite.Sprite):
+	def __init__(self, game, zone, groups, pos):
+		super().__init__(groups)
 
 		self.game = game
 		self.zone = zone
@@ -15,10 +15,11 @@ class Player(Object):
 		self.friction = -0.5
 		self.max_speed = 2
 		self.vel = pygame.math.Vector2()
+		self.angle = 0
 		self.edge = ''
 		self.grounded = True
 		self.fall_off_edge_threshold_speed = self.max_speed * 3
-		self.dash_lunge_speed = 12
+		self.dash_lunge_speed = 10
 
 		self.import_imgs()
 
@@ -29,10 +30,12 @@ class Player(Object):
 		self.image = self.animations['down_idle'][self.frame_index]
 		self.rect = self.image.get_rect(center = pos)
 		self.pos = pygame.math.Vector2(self.rect.center)
-		self.hitbox = self.rect.copy().inflate(-self.rect.width * 0.5, -self.rect.height * 0.75)
+		self.hitbox = self.rect.copy().inflate(-self.rect.width * 0.5, -self.rect.height * 0.5)
 
 		self.moving_right, self.moving_left = False, False
 		self.moving_down, self.moving_up = False, False
+
+		self.respawner = Object(self.game, self, [], self.rect.center, pygame.Surface((TILESIZE, TILESIZE)))
 
 	def animate(self, state, animation_speed, anmimation_type):
 		self.frame_index += animation_speed
@@ -102,23 +105,6 @@ class Player(Object):
 			if hasattr(sprite, 'hitbox'):
 				if sprite.hitbox.colliderect(self.hitbox) and self.grounded:
 
-					# if sprite.col == '6':
-					# 	if direction =='x':
-					# 		if self.vel.x >= 0:
-					# 			self.hitbox.bottom = sprite.hitbox.bottom - (self.hitbox.right - sprite.hitbox.left)
-					# 			self.acc.x = 0
-					# 		self.rect.centerx = self.hitbox.centerx
-					# 		self.pos.x = self.hitbox.centerx
-
-					# 	if direction =='y':
-					# 		if self.vel.y >= 0:
-					# 			self.hitbox.bottom = sprite.hitbox.bottom - (self.hitbox.right - sprite.hitbox.left)
-					# 			self.acc.y = 0
-					# 		self.rect.centery = self.hitbox.centery
-					# 		self.pos.y = self.hitbox.centery
-
-						
-
 					rel_x = self.hitbox.centerx - sprite.hitbox.centerx
 					rel_y = self.hitbox.centery - sprite.hitbox.centery
 
@@ -156,35 +142,33 @@ class Player(Object):
 
 					elif sprite.col == '6' or sprite.col == '16':
 						# moving right and diagonal up
-						sprite.hitbox = sprite.rect.inflate(-2, -2)
-						
-						target_y = sprite.hitbox.top - rel_x
-						target_x = sprite.hitbox.left - rel_y
+					
+						target_y = sprite.hitbox.centery - rel_x
+						target_x = sprite.hitbox.centerx - rel_y
 
-						if self.hitbox.centery > target_y - 8:
-							self.hitbox.centery = target_y - 8
-							self.hitbox.centerx = target_x - 8
+						if self.hitbox.centery > target_y - sprite.hitbox.height and \
+						((self.hitbox.bottom > sprite.hitbox.top + 1) and (self.hitbox.right > sprite.hitbox.left + 1)): 
+							self.hitbox.centery = target_y - sprite.hitbox.height
+							self.hitbox.centerx = target_x - sprite.hitbox.width
 
 							if sprite.col == '16': self.edge = 'right_down'
-							self.acc = pygame.math.Vector2()
 							self.vel.x -= 1
 							self.vel.y -= 1
 							self.rect.center = self.hitbox.center
-							self.pos.x, self.pos.y = self.hitbox.centerx,self.hitbox.centery
+							self.pos.x, self.pos.y = self.hitbox.centerx, self.hitbox.centery
 	
 					elif sprite.col == '7' or sprite.col == '17':
 						# moving left and diagonal up
-						sprite.hitbox = sprite.rect.inflate(-2, -2)
+	
+						target_y = sprite.hitbox.centery + rel_x
+						target_x = sprite.hitbox.centerx + rel_y
 
-						target_y = sprite.hitbox.top + rel_x
-						target_x = sprite.hitbox.right + rel_y
+						if self.hitbox.centery > target_y - sprite.hitbox.height and \
+						((self.hitbox.bottom > sprite.hitbox.top + 1) and (self.hitbox.left < sprite.hitbox.right - 1)):
+							self.hitbox.centery = target_y - sprite.hitbox.height
+							self.hitbox.centerx = target_x + sprite.hitbox.width
 
-						if self.hitbox.centery > target_y - 8:
-							self.hitbox.centery = target_y - 8
-							self.hitbox.centerx = target_x + 8
-							
 							if sprite.col == '17': self.edge = 'left_down'
-							self.acc = pygame.math.Vector2()
 							self.vel.x += 1
 							self.vel.y -= 1
 							self.rect.center = self.hitbox.center
@@ -193,17 +177,16 @@ class Player(Object):
 
 					elif sprite.col == '8' or sprite.col == '18':
 						# moving right and diagonal down
-						sprite.hitbox = sprite.rect.inflate(-2, -2)
 						
-						target_y = sprite.hitbox.bottom + rel_x
-						target_x = sprite.hitbox.left + rel_y
+						target_y = sprite.hitbox.centery + rel_x
+						target_x = sprite.hitbox.centerx + rel_y
 
-						if self.hitbox.centery < target_y + 8:
-							self.hitbox.centery = target_y + 8
-							self.hitbox.centerx = target_x - 8
+						if self.hitbox.centery < target_y + sprite.hitbox.height and \
+						((self.hitbox.top < sprite.hitbox.bottom - 1) and (self.hitbox.left < sprite.hitbox.right - 1)):
+							self.hitbox.centery = target_y + sprite.hitbox.height
+							self.hitbox.centerx = target_x - sprite.hitbox.width
+
 							if sprite.col == '18': self.edge = 'right_up'
-
-							self.acc = pygame.math.Vector2()
 							self.vel.x -= 1
 							self.vel.y += 1
 							self.rect.center = self.hitbox.center
@@ -212,17 +195,16 @@ class Player(Object):
 
 					elif sprite.col == '9' or sprite.col == '19':
 						# moving left and diagonal down
-						sprite.hitbox = sprite.rect.inflate(-2, -2)
 	
-						target_y = sprite.hitbox.bottom - rel_x
-						target_x = sprite.hitbox.right - rel_y
+						target_y = sprite.hitbox.centery - rel_x
+						target_x = sprite.hitbox.centerx - rel_y
 
-						if self.hitbox.centery < target_y + 8:
-							self.hitbox.centery = target_y + 8
-							self.hitbox.centerx = target_x + 8
+						if self.hitbox.centery < target_y + sprite.hitbox.height and \
+						((self.hitbox.top < sprite.hitbox.bottom - 1) and (self.hitbox.right > sprite.hitbox.left + 1)):
+							self.hitbox.centery = target_y + sprite.hitbox.height
+							self.hitbox.centerx = target_x + sprite.hitbox.width
 
 							if sprite.col == '19': self.edge = 'left_up'
-							self.acc = pygame.math.Vector2()
 							self.vel.x += 1
 							self.vel.y += 1
 							self.rect.center = self.hitbox.center
@@ -274,10 +256,6 @@ class Player(Object):
 		if self.acc.magnitude() < 0.1:
 			self.acc = pygame.math.Vector2()
 
-
-
-
-
 	def state_logic(self):
 		new_state = self.state.state_logic(self)
 		if new_state != None:
@@ -286,7 +264,7 @@ class Player(Object):
 			self.state
 		
 	def import_imgs(self):
-		self.animations = {'down_dash':[], 'up_dash':[], 'right_dash':[], 'left_dash':[],'down_attack':[], 'up_attack':[], 'right_attack':[], 'left_attack':[], 'up':[], 'down':[], 'left':[], 'right':[], 'up_idle':[], 'down_idle':[], 'left_idle':[], 'right_idle':[]}
+		self.animations = {'down_edge':[], 'up_edge':[], 'right_edge':[], 'left_edge':[], 'down_dash':[], 'up_dash':[], 'right_dash':[], 'left_dash':[],'down_attack':[], 'up_attack':[], 'right_attack':[], 'left_attack':[], 'up':[], 'down':[], 'left':[], 'right':[], 'up_idle':[], 'down_idle':[], 'left_idle':[], 'right_idle':[]}
 
 		for animation in self.animations.keys():
 			full_path = '../assets/player/' + animation
